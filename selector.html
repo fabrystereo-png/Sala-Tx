@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOC — Selector de Nodos</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;800&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#05080f;--panel:#0a1020;--border:#162030;--accent:#00aaff;--accent2:#00ffcc;--warn:#ffaa00;--danger:#ff3344;--text:#9ab8d0;--dim:#3a5060;--glow:0 0 16px rgba(0,170,255,0.35)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.08) 3px,rgba(0,0,0,0.08) 4px);pointer-events:none;z-index:9999}
+
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:var(--panel);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.logo{font-family:'Orbitron',sans-serif;font-size:1rem;font-weight:900;color:var(--accent);letter-spacing:3px;text-shadow:var(--glow)}
+.logo span{display:block;font-size:0.6rem;color:var(--dim);letter-spacing:5px;font-family:'Share Tech Mono',monospace;margin-top:2px}
+.header-right{display:flex;align-items:center;gap:20px}
+.user-badge{font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--dim);display:flex;align-items:center;gap:6px}
+.clock{font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:var(--accent)}
+.btn-logout{padding:4px 12px;background:transparent;border:1px solid var(--border);color:var(--dim);font-family:'Share Tech Mono',monospace;font-size:0.65rem;cursor:pointer;border-radius:3px;transition:all 0.2s;letter-spacing:1px}
+.btn-logout:hover{border-color:var(--danger);color:var(--danger)}
+
+.main{display:grid;grid-template-columns:1fr 340px;min-height:calc(100vh - 54px)}
+
+/* MAP SECTION */
+.map-section{padding:24px;position:relative}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.section-title{font-family:'Orbitron',sans-serif;font-size:0.85rem;color:var(--accent);letter-spacing:2px}
+.node-count{font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--dim)}
+
+/* SVG Map of Comodoro */
+.map-container{position:relative;background:var(--panel);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.map-container::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(0,170,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,170,255,0.02) 1px,transparent 1px);background-size:30px 30px;pointer-events:none}
+
+svg.city-map{width:100%;display:block}
+
+/* Node markers */
+.node-marker{cursor:pointer;transition:all 0.2s}
+.node-marker:hover .node-circle{filter:brightness(1.5) drop-shadow(0 0 8px rgba(0,170,255,0.8));transform:scale(1.3)}
+.node-marker.selected .node-circle{filter:drop-shadow(0 0 10px rgba(0,255,204,0.9))}
+.node-pulse{animation:nodePulse 2s infinite}
+@keyframes nodePulse{0%,100%{opacity:0.6;r:10}50%{opacity:0;r:18}}
+
+.blink{animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+
+/* RIGHT PANEL */
+.right-panel{background:var(--panel);border-left:1px solid var(--border);padding:20px 16px;overflow-y:auto}
+.panel-section{margin-bottom:28px}
+.panel-title{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--dim);letter-spacing:3px;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:14px}
+
+/* Site cards */
+.site-card{background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:4px;padding:10px 12px;margin-bottom:6px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:10px}
+.site-card:hover{border-color:var(--accent);background:rgba(0,170,255,0.06)}
+.site-card.active{border-color:var(--accent2);background:rgba(0,255,204,0.06)}
+.site-icon{font-size:1rem;width:22px;text-align:center}
+.site-info{flex:1}
+.site-name{font-size:0.82rem;font-weight:600;color:#fff;margin-bottom:2px}
+.site-type{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--dim)}
+.site-status{font-family:'Share Tech Mono',monospace;font-size:0.6rem;padding:2px 7px;border-radius:2px}
+.site-status.ok{background:rgba(0,255,204,0.12);color:var(--accent2)}
+.site-status.warn{background:rgba(255,170,0,0.12);color:var(--warn)}
+.site-status.off{background:rgba(255,255,255,0.04);color:var(--dim)}
+
+/* Province sites list */
+.prov-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.03);cursor:pointer;transition:all 0.2s;border-radius:3px}
+.prov-item:hover{background:rgba(0,170,255,0.06);color:#fff}
+.prov-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.prov-dot.ok{background:var(--accent2)}
+.prov-dot.warn{background:var(--warn)}
+.prov-dot.rep{background:var(--accent);opacity:0.6}
+.prov-name{font-size:0.82rem;flex:1}
+.prov-dist{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--dim)}
+
+/* Tooltip */
+#mapTooltip{position:absolute;background:var(--panel);border:1px solid var(--accent);padding:8px 12px;border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:0.72rem;pointer-events:none;display:none;z-index:50;min-width:160px;box-shadow:var(--glow)}
+#mapTooltip .tt-name{color:var(--accent);font-weight:bold;margin-bottom:3px}
+#mapTooltip .tt-row{display:flex;justify-content:space-between;gap:16px;color:var(--text);font-size:0.65rem}
+#mapTooltip .tt-val{color:var(--accent2)}
+
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">NOC PATAGONIA <span>GESTIÓN DE NODOS — COMODORO RIVADAVIA</span></div>
+  <div class="header-right">
+    <div class="user-badge">👤 <span id="userName">---</span></div>
+    <div class="clock" id="clock">--:--:--</div>
+    <button class="btn-logout" onclick="logout()">SALIR</button>
+  </div>
+</header>
+
+<div class="main">
+  <!-- MAP -->
+  <div class="map-section">
+    <div class="section-header">
+      <div class="section-title">MAPA DE NODOS — COMODORO RIVADAVIA</div>
+      <div class="node-count">10 NODOS ACTIVOS</div>
+    </div>
+
+    <div class="map-container">
+      <div id="mapTooltip">
+        <div class="tt-name" id="tt-name"></div>
+        <div class="tt-row"><span>Tipo</span><span class="tt-val" id="tt-type"></span></div>
+        <div class="tt-row"><span>Estado</span><span class="tt-val" id="tt-status"></span></div>
+        <div class="tt-row"><span>Equipos</span><span class="tt-val" id="tt-eq"></span></div>
+      </div>
+
+      <!-- SVG Map - Comodoro Rivadavia schematic -->
+      <svg class="city-map" viewBox="0 0 700 520" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="gnode"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+
+        <!-- Ocean / Golfo San Jorge -->
+        <rect x="0" y="0" width="700" height="520" fill="#090e18"/>
+        <path d="M580 0 L700 0 L700 520 L580 520 Q560 400 570 300 Q575 200 560 100 Z" fill="rgba(0,60,120,0.3)" stroke="rgba(0,170,255,0.15)" stroke-width="1"/>
+        <text x="638" y="260" fill="rgba(0,170,255,0.2)" font-family="Share Tech Mono" font-size="9" text-anchor="middle" transform="rotate(90,638,260)">GOLFO SAN JORGE</text>
+
+        <!-- City outline / streets schematic -->
+        <g stroke="rgba(0,170,255,0.08)" stroke-width="1" fill="none">
+          <!-- Main avenues -->
+          <line x1="100" y1="0" x2="100" y2="520"/>
+          <line x1="200" y1="0" x2="200" y2="520"/>
+          <line x1="300" y1="0" x2="300" y2="520"/>
+          <line x1="400" y1="0" x2="400" y2="520"/>
+          <line x1="500" y1="0" x2="500" y2="520"/>
+          <line x1="0" y1="100" x2="700" y2="100"/>
+          <line x1="0" y1="200" x2="700" y2="200"/>
+          <line x1="0" y1="300" x2="700" y2="300"/>
+          <line x1="0" y1="400" x2="700" y2="400"/>
+        </g>
+
+        <!-- Neighborhood labels -->
+        <text x="50" y="90" fill="rgba(0,170,255,0.12)" font-family="Share Tech Mono" font-size="7">RADA TILLY</text>
+        <text x="150" y="170" fill="rgba(0,170,255,0.12)" font-family="Share Tech Mono" font-size="7">MOSCONI</text>
+        <text x="240" y="90" fill="rgba(0,170,255,0.12)" font-family="Share Tech Mono" font-size="7">VILLA PUEYRREDÓN</text>
+        <text x="320" y="200" fill="rgba(0,170,255,0.12)" font-family="Share Tech Mono" font-size="7">CENTRO</text>
+        <text x="150" y="320" fill="rgba(0,170,255,0.12)" font-family="Share Tech Mono" font-size="7">DON BOSCO</text>
+        <text x="300" y="350" fill="rgba(0,170,255,0.12)" font-family="Share Tech Mono" font-size="7">LAPRIDA</text>
+        <text x="420" y="280" fill="rgba(0,170,255,0.12)" font-family="Share Tech Mono" font-size="7">PALAZZO</text>
+        <text x="80" y="420" fill="rgba(0,170,255,0.12)" font-family="Share Tech Mono" font-size="7">CAL. CÓRDOBA</text>
+        <text x="400" y="420" fill="rgba(0,170,255,0.12)" font-family="Share Tech Mono" font-size="7">CERRO TANQUE</text>
+        <text x="220" y="450" fill="rgba(0,170,255,0.12)" font-family="Share Tech Mono" font-size="7">McDONALD</text>
+
+        <!-- Connection lines between nodes -->
+        <g id="connLines" stroke="rgba(0,170,255,0.12)" stroke-width="1" stroke-dasharray="4,6" fill="none">
+          <line x1="320" y1="230" x2="270" y2="150"/>
+          <line x1="320" y1="230" x2="360" y2="220"/>
+          <line x1="320" y1="230" x2="200" y2="310"/>
+          <line x1="320" y1="230" x2="345" y2="340"/>
+          <line x1="320" y1="230" x2="160" y2="180"/>
+          <line x1="320" y1="230" x2="70" y2="100"/>
+          <line x1="320" y1="230" x2="450" y2="270"/>
+          <line x1="320" y1="230" x2="120" y2="400"/>
+          <line x1="320" y1="230" x2="440" y2="400"/>
+          <line x1="320" y1="230" x2="240" y2="450"/>
+        </g>
+
+        <!-- NODE MARKERS -->
+        <!-- Tx01 Centro 4to piso -->
+        <g class="node-marker" id="nm-tx01centro4" onclick="goToSala('sala.html?id=tx01centro4')" onmouseenter="showTip(event,'Sala Tx01 — Centro 4°P','Central Principal','● ACTIVO','12 equipos')" onmouseleave="hideTip()">
+          <circle cx="320" cy="230" r="14" fill="rgba(0,255,204,0.08)" class="node-pulse" style="animation-delay:0s"/>
+          <circle class="node-circle" cx="320" cy="230" r="9" fill="#0a1020" stroke="#00ffcc" stroke-width="2" filter="url(#gnode)"/>
+          <circle cx="320" cy="230" r="4" fill="#00ffcc"/>
+          <text x="320" y="252" fill="#00ffcc" font-family="Share Tech Mono" font-size="7.5" text-anchor="middle">TX01·4P</text>
+        </g>
+
+        <!-- Tx02 Centro 1er piso -->
+        <g class="node-marker" id="nm-tx02centro1" onclick="goToSala('sala.html?id=tx02centro1')" onmouseenter="showTip(event,'Sala Tx02 — Centro 1°P','Central Secundaria','● ACTIVO','8 equipos')" onmouseleave="hideTip()">
+          <circle cx="360" cy="220" r="12" fill="rgba(0,255,204,0.06)" class="node-pulse" style="animation-delay:0.4s"/>
+          <circle class="node-circle" cx="360" cy="220" r="8" fill="#0a1020" stroke="#00ffcc" stroke-width="1.5"/>
+          <circle cx="360" cy="220" r="3.5" fill="#00ffcc"/>
+          <text x="360" y="240" fill="#00ffcc" font-family="Share Tech Mono" font-size="7" text-anchor="middle">TX02·1P</text>
+        </g>
+
+        <!-- Villa Pueyrredón -->
+        <g class="node-marker" id="nm-vpuey" onclick="goToSala('sala.html?id=vpuey')" onmouseenter="showTip(event,'Sala Tx01 — V. Pueyrredón','Central Grande','● ACTIVO','18 equipos')" onmouseleave="hideTip()">
+          <circle cx="270" cy="150" r="14" fill="rgba(0,170,255,0.08)" class="node-pulse" style="animation-delay:0.8s"/>
+          <circle class="node-circle" cx="270" cy="150" r="9" fill="#0a1020" stroke="#00aaff" stroke-width="2" filter="url(#gnode)"/>
+          <circle cx="270" cy="150" r="4" fill="#00aaff"/>
+          <text x="270" y="172" fill="#00aaff" font-family="Share Tech Mono" font-size="7.5" text-anchor="middle">V.PUEY</text>
+        </g>
+
+        <!-- Rada Tilly -->
+        <g class="node-marker" id="nm-radatilly" onclick="goToSala('sala.html?id=radatilly')" onmouseenter="showTip(event,'Sala Tx01 — Rada Tilly','Central','● ACTIVO','6 equipos')" onmouseleave="hideTip()">
+          <circle cx="70" cy="100" r="11" fill="rgba(0,170,255,0.06)" class="node-pulse" style="animation-delay:1.2s"/>
+          <circle class="node-circle" cx="70" cy="100" r="7" fill="#0a1020" stroke="#00aaff" stroke-width="1.5"/>
+          <circle cx="70" cy="100" r="3" fill="#00aaff"/>
+          <text x="70" y="118" fill="#00aaff" font-family="Share Tech Mono" font-size="7" text-anchor="middle">R.TILLY</text>
+        </g>
+
+        <!-- Gral Mosconi -->
+        <g class="node-marker" id="nm-mosconi" onclick="goToSala('sala.html?id=mosconi')" onmouseenter="showTip(event,'Sala Tx01 — Gral Mosconi','Central','● ACTIVO','5 equipos')" onmouseleave="hideTip()">
+          <circle cx="160" cy="180" r="11" fill="rgba(0,170,255,0.06)" class="node-pulse" style="animation-delay:1.6s"/>
+          <circle class="node-circle" cx="160" cy="180" r="7" fill="#0a1020" stroke="#00aaff" stroke-width="1.5"/>
+          <circle cx="160" cy="180" r="3" fill="#00aaff"/>
+          <text x="160" y="198" fill="#00aaff" font-family="Share Tech Mono" font-size="7" text-anchor="middle">MOSCONI</text>
+        </g>
+
+        <!-- Don Bosco -->
+        <g class="node-marker" id="nm-donbosco" onclick="goToSala('sala.html?id=donbosco')" onmouseenter="showTip(event,'Shelter Tx01 — Don Bosco','Shelter','● ACTIVO','4 equipos')" onmouseleave="hideTip()">
+          <circle cx="200" cy="310" r="11" fill="rgba(0,170,255,0.06)" class="node-pulse" style="animation-delay:2s"/>
+          <circle class="node-circle" cx="200" cy="310" r="7" fill="#0a1020" stroke="#00aaff" stroke-width="1.5"/>
+          <circle cx="200" cy="310" r="3" fill="#00aaff"/>
+          <text x="200" y="328" fill="#00aaff" font-family="Share Tech Mono" font-size="7" text-anchor="middle">D.BOSCO</text>
+        </g>
+
+        <!-- Cerro Tanque -->
+        <g class="node-marker" id="nm-cerrotanque" onclick="goToSala('sala.html?id=cerrotanque')" onmouseenter="showTip(event,'Sala Tx01 — Cerro Tanque','Central Alta','● ACTIVO','7 equipos')" onmouseleave="hideTip()">
+          <circle cx="440" cy="400" r="11" fill="rgba(255,170,0,0.08)" class="node-pulse" style="animation-delay:0.3s"/>
+          <circle class="node-circle" cx="440" cy="400" r="7" fill="#0a1020" stroke="#ffaa00" stroke-width="1.5"/>
+          <circle cx="440" cy="400" r="3" fill="#ffaa00" class="blink"/>
+          <text x="440" y="418" fill="#ffaa00" font-family="Share Tech Mono" font-size="7" text-anchor="middle">C.TANQUE</text>
+        </g>
+
+        <!-- Palazzo -->
+        <g class="node-marker" id="nm-palazzo" onclick="goToSala('sala.html?id=palazzo')" onmouseenter="showTip(event,'Tx01 — Palazzo','Central','● ACTIVO','5 equipos')" onmouseleave="hideTip()">
+          <circle cx="450" cy="270" r="11" fill="rgba(0,170,255,0.06)" class="node-pulse" style="animation-delay:1s"/>
+          <circle class="node-circle" cx="450" cy="270" r="7" fill="#0a1020" stroke="#00aaff" stroke-width="1.5"/>
+          <circle cx="450" cy="270" r="3" fill="#00aaff"/>
+          <text x="450" y="288" fill="#00aaff" font-family="Share Tech Mono" font-size="7" text-anchor="middle">PALAZZO</text>
+        </g>
+
+        <!-- Caleta Córdoba -->
+        <g class="node-marker" id="nm-caletacba" onclick="goToSala('sala.html?id=caletacba')" onmouseenter="showTip(event,'Tx01 — Caleta Córdoba','Central','● ACTIVO','4 equipos')" onmouseleave="hideTip()">
+          <circle cx="120" cy="400" r="11" fill="rgba(0,170,255,0.06)" class="node-pulse" style="animation-delay:1.4s"/>
+          <circle class="node-circle" cx="120" cy="400" r="7" fill="#0a1020" stroke="#00aaff" stroke-width="1.5"/>
+          <circle cx="120" cy="400" r="3" fill="#00aaff"/>
+          <text x="120" y="418" fill="#00aaff" font-family="Share Tech Mono" font-size="7" text-anchor="middle">CAL.CBA</text>
+        </g>
+
+        <!-- Laprida -->
+        <g class="node-marker" id="nm-laprida" onclick="goToSala('sala.html?id=laprida')" onmouseenter="showTip(event,'Sala Tx01 — Laprida','Central','● ACTIVO','5 equipos')" onmouseleave="hideTip()">
+          <circle cx="345" cy="340" r="11" fill="rgba(0,170,255,0.06)" class="node-pulse" style="animation-delay:1.8s"/>
+          <circle class="node-circle" cx="345" cy="340" r="7" fill="#0a1020" stroke="#00aaff" stroke-width="1.5"/>
+          <circle cx="345" cy="340" r="3" fill="#00aaff"/>
+          <text x="345" y="358" fill="#00aaff" font-family="Share Tech Mono" font-size="7" text-anchor="middle">LAPRIDA</text>
+        </g>
+
+        <!-- McDonald (outside CRV label area) -->
+        <g class="node-marker" id="nm-mcdonald" onclick="goToSala('sala.html?id=mcdonald')" onmouseenter="showTip(event,'Tx01 — McDonald','Central','● ACTIVO','3 equipos')" onmouseleave="hideTip()">
+          <circle cx="240" cy="450" r="10" fill="rgba(0,170,255,0.06)" class="node-pulse" style="animation-delay:2.2s"/>
+          <circle class="node-circle" cx="240" cy="450" r="6" fill="#0a1020" stroke="#00aaff" stroke-width="1.5"/>
+          <circle cx="240" cy="450" r="2.5" fill="#00aaff"/>
+          <text x="240" y="466" fill="#00aaff" font-family="Share Tech Mono" font-size="7" text-anchor="middle">McDONALD</text>
+        </g>
+
+        <!-- Scale / North indicator -->
+        <g transform="translate(620,460)">
+          <circle cx="0" cy="0" r="18" fill="rgba(0,170,255,0.05)" stroke="rgba(0,170,255,0.2)" stroke-width="1"/>
+          <line x1="0" y1="-12" x2="0" y2="12" stroke="rgba(0,170,255,0.4)" stroke-width="1"/>
+          <line x1="-12" y1="0" x2="12" y2="0" stroke="rgba(0,170,255,0.2)" stroke-width="1"/>
+          <text x="0" y="-15" fill="rgba(0,170,255,0.5)" font-family="Share Tech Mono" font-size="8" text-anchor="middle">N</text>
+        </g>
+
+        <!-- Legend -->
+        <g transform="translate(16,490)">
+          <circle cx="6" cy="6" r="4" fill="#00ffcc"/><text x="14" y="10" fill="#3a5060" font-family="Share Tech Mono" font-size="7">CENTRAL PRINCIPAL</text>
+          <circle cx="116" cy="6" r="4" fill="#00aaff"/><text x="124" y="10" fill="#3a5060" font-family="Share Tech Mono" font-size="7">CENTRAL</text>
+          <circle cx="186" cy="6" r="4" fill="#ffaa00"/><text x="194" y="10" fill="#3a5060" font-family="Share Tech Mono" font-size="7">ALERTA</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+
+    <div class="panel-section">
+      <div class="panel-title">// NODOS COMODORO</div>
+      <div class="site-card" onclick="goToSala('sala.html?id=tx01centro4')">
+        <span class="site-icon">🏢</span>
+        <div class="site-info"><div class="site-name">Sala Tx01 — Centro</div><div class="site-type">4TO PISO · CENTRAL PRINCIPAL</div></div>
+        <span class="site-status ok">ON</span>
+      </div>
+      <div class="site-card" onclick="goToSala('sala.html?id=tx02centro1')">
+        <span class="site-icon">🏢</span>
+        <div class="site-info"><div class="site-name">Sala Tx02 — Centro</div><div class="site-type">1ER PISO · CENTRAL</div></div>
+        <span class="site-status ok">ON</span>
+      </div>
+      <div class="site-card" onclick="goToSala('sala.html?id=vpuey')">
+        <span class="site-icon">🏭</span>
+        <div class="site-info"><div class="site-name">Sala Tx01 — V. Pueyrredón</div><div class="site-type">CENTRAL GRANDE</div></div>
+        <span class="site-status ok">ON</span>
+      </div>
+      <div class="site-card" onclick="goToSala('sala.html?id=radatilly')">
+        <span class="site-icon">📡</span>
+        <div class="site-info"><div class="site-name">Sala Tx01 — Rada Tilly</div><div class="site-type">CENTRAL</div></div>
+        <span class="site-status ok">ON</span>
+      </div>
+      <div class="site-card" onclick="goToSala('sala.html?id=mosconi')">
+        <span class="site-icon">📡</span>
+        <div class="site-info"><div class="site-name">Sala Tx01 — Gral. Mosconi</div><div class="site-type">CENTRAL</div></div>
+        <span class="site-status ok">ON</span>
+      </div>
+      <div class="site-card" onclick="goToSala('sala.html?id=donbosco')">
+        <span class="site-icon">📦</span>
+        <div class="site-info"><div class="site-name">Shelter Tx01 — Don Bosco</div><div class="site-type">SHELTER</div></div>
+        <span class="site-status ok">ON</span>
+      </div>
+      <div class="site-card" onclick="goToSala('sala.html?id=cerrotanque')">
+        <span class="site-icon">⚠️</span>
+        <div class="site-info"><div class="site-name">Sala Tx01 — Cerro Tanque</div><div class="site-type">CENTRAL ALTA</div></div>
+        <span class="site-status warn">WARN</span>
+      </div>
+      <div class="site-card" onclick="goToSala('sala.html?id=palazzo')">
+        <span class="site-icon">📡</span>
+        <div class="site-info"><div class="site-name">Tx01 — Palazzo</div><div class="site-type">CENTRAL</div></div>
+        <span class="site-status ok">ON</span>
+      </div>
+      <div class="site-card" onclick="goToSala('sala.html?id=caletacba')">
+        <span class="site-icon">📡</span>
+        <div class="site-info"><div class="site-name">Tx01 — Caleta Córdoba</div><div class="site-type">CENTRAL</div></div>
+        <span class="site-status ok">ON</span>
+      </div>
+      <div class="site-card" onclick="goToSala('sala.html?id=laprida')">
+        <span class="site-icon">📡</span>
+        <div class="site-info"><div class="site-name">Sala Tx01 — Laprida</div><div class="site-type">CENTRAL</div></div>
+        <span class="site-status ok">ON</span>
+      </div>
+      <div class="site-card" onclick="goToSala('sala.html?id=mcdonald')">
+        <span class="site-icon">📡</span>
+        <div class="site-info"><div class="site-name">Tx01 — McDonald</div><div class="site-type">CENTRAL</div></div>
+        <span class="site-status ok">ON</span>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-title">// NODOS PROVINCIA</div>
+
+      <div class="prov-item" onclick="goToSala('sala.html?id=caletaolivia1')">
+        <span class="prov-dot ok"></span>
+        <span class="prov-name">Caleta Olivia — Shelter Tx01</span>
+        <span class="prov-dist">~70km</span>
+      </div>
+      <div class="prov-item" onclick="goToSala('sala.html?id=caletaolivia2')">
+        <span class="prov-dot ok"></span>
+        <span class="prov-name">Caleta Olivia — Shelter Tx02</span>
+        <span class="prov-dist">~70km</span>
+      </div>
+      <div class="prov-item" onclick="goToSala('sala.html?id=picosalamanca')">
+        <span class="prov-dot rep"></span>
+        <span class="prov-name">Pico Salamanca — Tx01</span>
+        <span class="prov-dist">Rep.</span>
+      </div>
+      <div class="prov-item" onclick="goToSala('sala.html?id=malaspina')">
+        <span class="prov-dot rep"></span>
+        <span class="prov-name">Malaspina — Tx01</span>
+        <span class="prov-dist">Rep.</span>
+      </div>
+      <div class="prov-item" onclick="goToSala('sala.html?id=garayalde')">
+        <span class="prov-dot rep"></span>
+        <span class="prov-name">Garayalde — Tx01</span>
+        <span class="prov-dist">Rep.</span>
+      </div>
+      <div class="prov-item" onclick="goToSala('sala.html?id=picotruncado')">
+        <span class="prov-dot ok"></span>
+        <span class="prov-name">Pico Truncado — Tx01</span>
+        <span class="prov-dist">~175km</span>
+      </div>
+      <div class="prov-item" onclick="goToSala('sala.html?id=lasheras')">
+        <span class="prov-dot ok"></span>
+        <span class="prov-name">Las Heras — Tx01</span>
+        <span class="prov-dist">~280km</span>
+      </div>
+      <div class="prov-item" onclick="goToSala('sala.html?id=puertodeseado')">
+        <span class="prov-dot ok"></span>
+        <span class="prov-name">Puerto Deseado — Tx01</span>
+        <span class="prov-dist">~380km</span>
+      </div>
+      <div class="prov-item" onclick="goToSala('sala.html?id=jaramillo')">
+        <span class="prov-dot rep"></span>
+        <span class="prov-name">Jaramillo — Tx01</span>
+        <span class="prov-dist">Rep.</span>
+      </div>
+      <div class="prov-item" onclick="goToSala('sala.html?id=quinta')">
+        <span class="prov-dot ok"></span>
+        <span class="prov-name">Quinta — Tx01</span>
+        <span class="prov-dist">~120km</span>
+      </div>
+      <div class="prov-item" onclick="goToSala('sala.html?id=peritomoreno')">
+        <span class="prov-dot ok"></span>
+        <span class="prov-name">Perito Moreno — Tx01</span>
+        <span class="prov-dist">~520km</span>
+      </div>
+      <div class="prov-item" onclick="goToSala('sala.html?id=riomayo')">
+        <span class="prov-dot ok"></span>
+        <span class="prov-name">Río Mayo — Tx01</span>
+        <span class="prov-dist">~430km</span>
+      </div>
+      <div class="prov-item" onclick="goToSala('sala.html?id=sarmiento')">
+        <span class="prov-dot ok"></span>
+        <span class="prov-name">Sarmiento — Tx01</span>
+        <span class="prov-dist">~150km</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Auth check
+if(!sessionStorage.getItem('noc_auth')){window.location.href='index.html';}
+document.getElementById('userName').textContent = sessionStorage.getItem('noc_user')||'---';
+
+function logout(){sessionStorage.clear();window.location.href='index.html';}
+function goToSala(url){window.location.href=url;}
+
+// Tooltip
+const tip=document.getElementById('mapTooltip');
+function showTip(e,name,type,status,eq){
+  document.getElementById('tt-name').textContent=name;
+  document.getElementById('tt-type').textContent=type;
+  document.getElementById('tt-status').textContent=status;
+  document.getElementById('tt-eq').textContent=eq;
+  tip.style.display='block';
+}
+function hideTip(){tip.style.display='none';}
+document.querySelector('.map-container').addEventListener('mousemove',e=>{
+  const r=e.currentTarget.getBoundingClientRect();
+  let x=e.clientX-r.left+14, y=e.clientY-r.top+14;
+  if(x+180>r.width) x-=200;
+  tip.style.left=x+'px'; tip.style.top=y+'px';
+});
+
+// Clock
+function tick(){const n=new Date();document.getElementById('clock').textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0');}
+setInterval(tick,1000);tick();
+</script>
+</body>
+</html>

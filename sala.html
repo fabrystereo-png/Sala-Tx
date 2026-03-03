@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOC — Detalle de Sala</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;800&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#05080f;--panel:#0a1020;--border:#162030;--accent:#00aaff;--accent2:#00ffcc;--warn:#ffaa00;--danger:#ff3344;--text:#9ab8d0;--dim:#3a5060;--glow:0 0 16px rgba(0,170,255,0.3)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.08) 3px,rgba(0,0,0,0.08) 4px);pointer-events:none;z-index:9999}
+
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:var(--panel);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.logo{font-family:'Orbitron',sans-serif;font-size:1rem;font-weight:900;color:var(--accent);letter-spacing:3px}
+.logo span{display:block;font-size:0.6rem;color:var(--dim);letter-spacing:4px;font-family:'Share Tech Mono',monospace;margin-top:2px}
+.header-right{display:flex;align-items:center;gap:14px}
+.btn-back{padding:5px 14px;background:transparent;border:1px solid var(--border);color:var(--text);font-family:'Share Tech Mono',monospace;font-size:0.65rem;cursor:pointer;border-radius:3px;transition:all 0.2s;letter-spacing:1px}
+.btn-back:hover{border-color:var(--accent);color:var(--accent)}
+.clock{font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:var(--accent)}
+
+.page{display:grid;grid-template-columns:1fr 320px;min-height:calc(100vh - 54px)}
+
+/* LEFT — Racks */
+.racks-area{padding:24px;overflow-y:auto}
+.sala-header{margin-bottom:24px}
+.sala-name{font-family:'Orbitron',sans-serif;font-size:1.2rem;color:#fff;margin-bottom:4px}
+.sala-meta{font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--dim);display:flex;gap:20px;flex-wrap:wrap}
+.sala-meta span{display:flex;align-items:center;gap:6px}
+.status-badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:3px;font-family:'Share Tech Mono',monospace;font-size:0.65rem}
+.status-badge.on{background:rgba(0,255,204,0.1);color:var(--accent2);border:1px solid rgba(0,255,204,0.25)}
+.status-badge.warn{background:rgba(255,170,0,0.1);color:var(--warn);border:1px solid rgba(255,170,0,0.25)}
+
+.racks-grid{display:flex;gap:20px;flex-wrap:wrap}
+
+/* Rack */
+.rack{background:var(--panel);border:1px solid var(--border);border-radius:6px;width:200px;flex-shrink:0;overflow:hidden;position:relative}
+.rack::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+.rack-header{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.rack-name{font-family:'Orbitron',sans-serif;font-size:0.7rem;color:var(--accent);letter-spacing:1px}
+.rack-units{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--dim)}
+.rack-body{padding:6px}
+
+/* Equipment slot in rack */
+.eq-slot{margin-bottom:3px;cursor:pointer;border-radius:3px;overflow:hidden;transition:all 0.15s}
+.eq-slot:hover{transform:translateX(2px)}
+.eq-slot.selected{outline:1px solid var(--accent2)}
+.eq-inner{padding:5px 8px;display:flex;align-items:center;gap:7px;position:relative}
+.eq-led{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.eq-led.green{background:var(--accent2);box-shadow:0 0 5px rgba(0,255,204,0.6)}
+.eq-led.blue{background:var(--accent);box-shadow:0 0 5px rgba(0,170,255,0.6)}
+.eq-led.yellow{background:var(--warn);box-shadow:0 0 5px rgba(255,170,0,0.6);animation:pulse 1.5s infinite}
+.eq-led.red{background:var(--danger);animation:pulse 1s infinite}
+.eq-led.off{background:var(--dim)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.eq-label{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.eq-type-badge{font-size:0.55rem;padding:1px 5px;border-radius:2px;font-family:'Share Tech Mono',monospace;flex-shrink:0}
+
+/* Equipment type colors */
+.type-dwdm{background:rgba(0,170,255,0.12);color:var(--accent);border-left:2px solid var(--accent)}
+.type-sdh{background:rgba(0,255,204,0.08);color:var(--accent2);border-left:2px solid var(--accent2)}
+.type-radio{background:rgba(255,170,0,0.08);color:var(--warn);border-left:2px solid var(--warn)}
+.type-router{background:rgba(255,51,68,0.08);color:#ff6677;border-left:2px solid #ff3344}
+.type-gpon{background:rgba(150,100,255,0.08);color:#bb88ff;border-left:2px solid #9955ff}
+.type-other{background:rgba(255,255,255,0.04);color:var(--dim);border-left:2px solid var(--dim)}
+.type-ups{background:rgba(255,200,0,0.08);color:#ffcc00;border-left:2px solid #ffcc00}
+
+.badge-dwdm{background:rgba(0,170,255,0.2);color:var(--accent)}
+.badge-sdh{background:rgba(0,255,204,0.15);color:var(--accent2)}
+.badge-radio{background:rgba(255,170,0,0.15);color:var(--warn)}
+.badge-router{background:rgba(255,51,68,0.15);color:#ff6677}
+.badge-gpon{background:rgba(150,100,255,0.15);color:#bb88ff}
+.badge-ups{background:rgba(255,200,0,0.15);color:#ffcc00}
+.badge-other{background:rgba(255,255,255,0.06);color:var(--dim)}
+
+.empty-slot{height:14px;background:rgba(0,0,0,0.3);border-radius:2px;margin-bottom:3px;opacity:0.3}
+
+/* RIGHT PANEL */
+.detail-panel{background:var(--panel);border-left:1px solid var(--border);padding:20px 16px;overflow-y:auto}
+.panel-title{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--dim);letter-spacing:3px;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:14px}
+
+.detail-empty{text-align:center;padding:40px 10px;color:var(--dim);font-size:0.8rem;font-family:'Share Tech Mono',monospace;line-height:2.2}
+
+.eq-detail{animation:fadeIn 0.25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.eq-detail-name{font-family:'Orbitron',sans-serif;font-size:0.95rem;color:#fff;margin-bottom:2px}
+.eq-detail-model{font-family:'Share Tech Mono',monospace;font-size:0.68rem;color:var(--dim);margin-bottom:14px}
+
+.spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:16px}
+.spec-card{background:rgba(255,255,255,0.02);border:1px solid var(--border);padding:9px;border-radius:4px}
+.spec-lbl{font-size:0.58rem;font-family:'Share Tech Mono',monospace;color:var(--dim);letter-spacing:1px;margin-bottom:3px}
+.spec-val{font-size:0.88rem;color:#fff;font-weight:600}
+.spec-unit{font-size:0.6rem;color:var(--dim)}
+
+.maint-section{margin-bottom:16px}
+.maint-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.78rem}
+.maint-label{color:var(--text)}
+.maint-val{font-family:'Share Tech Mono',monospace;font-size:0.68rem}
+.maint-val.ok{color:var(--accent2)}
+.maint-val.warn{color:var(--warn)}
+.maint-val.na{color:var(--dim)}
+
+.filter-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-top:8px}
+.filter-box{background:rgba(255,255,255,0.02);border:1px solid var(--border);padding:7px;border-radius:3px;text-align:center}
+.filter-num{font-family:'Orbitron',monospace;font-size:1.1rem;color:#fff;font-weight:700}
+.filter-lbl{font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:var(--dim);margin-top:2px}
+
+.bar-meter{margin-bottom:10px}
+.bar-label{display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:3px;color:var(--dim)}
+.bar-track{height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;border-radius:2px}
+.bar-fill.cyan{background:linear-gradient(90deg,#004466,var(--accent))}
+.bar-fill.green{background:linear-gradient(90deg,#00331a,var(--accent2))}
+.bar-fill.warn{background:linear-gradient(90deg,#331a00,var(--warn))}
+
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">NOC PATAGONIA <span id="salaSubtitle">CARGANDO...</span></div>
+  <div class="header-right">
+    <div class="clock" id="clock">--:--:--</div>
+    <button class="btn-back" onclick="window.location.href='selector.html'">← VOLVER AL MAPA</button>
+  </div>
+</header>
+
+<div class="page">
+  <div class="racks-area">
+    <div class="sala-header">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px">
+        <div class="sala-name" id="salaName">Cargando...</div>
+        <div class="status-badge on" id="salaStatus">● ACTIVO</div>
+      </div>
+      <div class="sala-meta" id="salaMeta">
+        <span>📍 Comodoro Rivadavia</span>
+        <span>🗓 Último mant: <span style="color:var(--accent2)" id="lastMaint">--/--/----</span></span>
+        <span>🔧 Equipos: <span style="color:#fff" id="totalEq">--</span></span>
+      </div>
+    </div>
+    <div class="racks-grid" id="racksGrid">
+      <!-- Racks inserted by JS -->
+    </div>
+  </div>
+
+  <div class="detail-panel">
+    <div class="panel-title">// DETALLE DEL EQUIPO</div>
+    <div id="detailContent">
+      <div class="detail-empty">← HACÉ CLIC EN<br>UN EQUIPO<br>PARA VER DETALLES</div>
+    </div>
+  </div>
+</div>
+
+<script>
+if(!sessionStorage.getItem('noc_auth')){window.location.href='index.html';}
+
+// Parse URL param
+const params = new URLSearchParams(window.location.search);
+const salaId = params.get('id') || 'tx01centro4';
+
+// ===================== SALA DATA =====================
+const salas = {
+  tx01centro4: {
+    name: "Sala Tx01 — Centro 4° Piso",
+    subtitle: "SALA TX01 · CENTRO · 4TO PISO",
+    location: "Comodoro Rivadavia — Centro",
+    lastMaint: "15/01/2026",
+    status: "on",
+    racks: [
+      {
+        name: "RACK-01", units: "42U",
+        equipment: [
+          {id:"e1",name:"CIENA 6500",model:"Ciena 6500-T12",type:"dwdm",led:"green",specs:[["CANALES","88","λ"],["VELOCIDAD","100G","WDM"],["AMPLIF","EDFA","x4"]],maint:{filtros:2,cambio:"Feb 2026",limpieza:"Ene 2026",alertas:"Ninguna"}},
+          {id:"e2",name:"HUAWEI OSN9800",model:"Huawei OSN 9800",type:"dwdm",led:"green",specs:[["TARJETAS","16","OTU4"],["CAPACIDAD","4T","bps"],["GESTIÓN","iManager","U2000"]],maint:{filtros:4,cambio:"Mar 2026",limpieza:"Ene 2026",alertas:"Ninguna"}},
+          {id:"e3",name:"HIT 7200",model:"Sycamore HiT 7200",type:"dwdm",led:"blue",specs:[["TIPO","DWDM","Metro"],["PUERTOS","32","SDH"],["AMPLIF","Raman",""]],maint:{filtros:2,cambio:"Abr 2026",limpieza:"Feb 2026",alertas:"Ninguna"}},
+          {id:"e4",name:"HIT 7025",model:"Sycamore HiT 7025",type:"sdh",led:"green",specs:[["TRAMA","STM-64","SDH"],["PUERTOS","16","STM-1"],["PROTEC","MSP","1+1"]],maint:{filtros:0,cambio:"N/A",limpieza:"Dic 2025",alertas:"Ninguna"}},
+          {id:"e5",name:"CISCO 2900",model:"Cisco 2921 ISR",type:"router",led:"green",specs:[["TIPO","Router","Gestión"],["PUERTOS","4","GbE"],["RAM","2","GB"]],maint:{filtros:0,cambio:"N/A",limpieza:"Dic 2025",alertas:"Ninguna"}},
+        ]
+      },
+      {
+        name: "RACK-02", units: "42U",
+        equipment: [
+          {id:"e6",name:"NEC PASOLINK",model:"NEC iPASOLINK EX",type:"radio",led:"green",specs:[["BANDA","11","GHz"],["CAPACIDAD","2×1G","bps"],["MODULA","QAM-1024",""]],maint:{filtros:0,cambio:"N/A",limpieza:"Nov 2025",alertas:"Ninguna"}},
+          {id:"e7",name:"SIAE ALC+",model:"SIAE ALC Plus2",type:"radio",led:"green",specs:[["BANDA","18","GHz"],["CAPACIDAD","500M","bps"],["PROTEC","1+1","XPIC"]],maint:{filtros:0,cambio:"N/A",limpieza:"Nov 2025",alertas:"Ninguna"}},
+          {id:"e8",name:"ZTE ZXMW",model:"ZTE ZXMW NR8250",type:"radio",led:"yellow",specs:[["BANDA","23","GHz"],["CAPACIDAD","400M","bps"],["ESTADO","WARN","BER alto"]],maint:{filtros:0,cambio:"N/A",limpieza:"Oct 2025",alertas:"⚠ BER elevado — revisar"}},
+          {id:"e9",name:"HUAWEI S3352",model:"Huawei S3352P-EI",type:"router",led:"green",specs:[["TIPO","Switch","L3"],["PUERTOS","48","FE"],["UPLINK","4","GbE"]],maint:{filtros:0,cambio:"N/A",limpieza:"Dic 2025",alertas:"Ninguna"}},
+          {id:"e10",name:"APC UPS",model:"APC Smart-UPS 3000",type:"ups",led:"green",specs:[["CARGA","62","%"],["BATERÍA","91","%"],["AUTONOM","28","min"]],maint:{filtros:0,cambio:"N/A",limpieza:"Ene 2026",alertas:"Ninguna"}},
+        ]
+      },
+      {
+        name: "RACK-03", units: "24U",
+        equipment: [
+          {id:"e11",name:"FUSION SW",model:"Fusion Splicing Sys",type:"other",led:"green",specs:[["TIPO","Splicing","Fiber"],["PUERTOS","96","FC"],["PANEL","24","U"]],maint:{filtros:6,cambio:"Mar 2026",limpieza:"Ene 2026",alertas:"Ninguna"}},
+          {id:"e12",name:"CIENA 3930",model:"Ciena 3930 Service",type:"dwdm",led:"blue",specs:[["TIPO","Carrier","Eth"],["PUERTOS","20","GbE"],["MPLS","Sí","T-MPLS"]],maint:{filtros:1,cambio:"Abr 2026",limpieza:"Feb 2026",alertas:"Ninguna"}},
+        ]
+      }
+    ]
+  },
+  vpuey: {
+    name: "Sala Tx01 — Villa Pueyrredón",
+    subtitle: "SALA TX01 · VILLA PUEYRREDÓN",
+    location: "Comodoro Rivadavia — V. Pueyrredón",
+    lastMaint: "10/01/2026",
+    status: "on",
+    racks: [
+      {
+        name: "RACK-01", units: "42U",
+        equipment: [
+          {id:"v1",name:"CORIANT DWDM",model:"Coriant 7100 Nano",type:"dwdm",led:"green",specs:[["CANALES","40","λ"],["VELOCIDAD","10G","WDM"],["SPAN","80","km"]],maint:{filtros:3,cambio:"Mar 2026",limpieza:"Ene 2026",alertas:"Ninguna"}},
+          {id:"v2",name:"HIT 7025",model:"Sycamore HiT 7025",type:"sdh",led:"green",specs:[["TRAMA","STM-16","SDH"],["PUERTOS","8","STM-1"],["PROTEC","SNCP",""]],maint:{filtros:0,cambio:"N/A",limpieza:"Dic 2025",alertas:"Ninguna"}},
+          {id:"v3",name:"NEC PASOLINK",model:"NEC iPASOLINK VR",type:"radio",led:"green",specs:[["BANDA","6","GHz"],["CAPACIDAD","400M","bps"],["MODULA","QAM-256",""]],maint:{filtros:0,cambio:"N/A",limpieza:"Nov 2025",alertas:"Ninguna"}},
+          {id:"v4",name:"CISCO 3650",model:"Cisco Catalyst 3650",type:"router",led:"green",specs:[["TIPO","Switch","L3"],["PUERTOS","48","GbE"],["UPLINK","4","10G"]],maint:{filtros:0,cambio:"N/A",limpieza:"Dic 2025",alertas:"Ninguna"}},
+        ]
+      },
+      {
+        name: "RACK-02", units: "42U",
+        equipment: [
+          {id:"v5",name:"GPON HUAWEI",model:"Huawei MA5608T",type:"gpon",led:"green",specs:[["PUERTOS","16","GPON"],["SUSCR","1024","ONT"],["VELOCIDAD","2.5G","ds"]],maint:{filtros:2,cambio:"Feb 2026",limpieza:"Ene 2026",alertas:"Ninguna"}},
+          {id:"v6",name:"ADSL ALCATEL",model:"Alcatel-Lucent 7330",type:"other",led:"yellow",specs:[["PUERTOS","48","ADSL2+"],["BONDING","Sí",""],["VDSL2","Sí","17MHz"]],maint:{filtros:4,cambio:"Feb 2026",limpieza:"Dic 2025",alertas:"⚠ Filtro vencido"}},
+          {id:"v7",name:"SIAE LINK",model:"SIAE ALFOplus2",type:"radio",led:"green",specs:[["BANDA","28","GHz"],["CAPACIDAD","1G","bps"],["DISTANCIA","5","km"]],maint:{filtros:0,cambio:"N/A",limpieza:"Nov 2025",alertas:"Ninguna"}},
+        ]
+      }
+    ]
+  },
+  cerrotanque: {
+    name: "Sala Tx01 — Cerro Tanque",
+    subtitle: "SALA TX01 · CERRO TANQUE",
+    location: "Comodoro Rivadavia — Cerro Tanque",
+    lastMaint: "20/11/2025",
+    status: "warn",
+    racks: [
+      {
+        name: "RACK-01", units: "24U",
+        equipment: [
+          {id:"ct1",name:"CIENA 6500",model:"Ciena 6500-T8",type:"dwdm",led:"yellow",specs:[["CANALES","40","λ"],["VELOCIDAD","10G","WDM"],["ALERTA","WARN","Temp alta"]],maint:{filtros:2,cambio:"VENCIDO",limpieza:"Nov 2025",alertas:"⚠ Temperatura elevada — limpieza urgente"}},
+          {id:"ct2",name:"HIT 7025",model:"Sycamore HiT 7025",type:"sdh",led:"green",specs:[["TRAMA","STM-4","SDH"],["PUERTOS","4","STM-1"],["PROTEC","MSP",""]],maint:{filtros:0,cambio:"N/A",limpieza:"Nov 2025",alertas:"Ninguna"}},
+          {id:"ct3",name:"NEC PASOLINK",model:"NEC iPASOLINK X",type:"radio",led:"green",specs:[["BANDA","15","GHz"],["CAPACIDAD","300M","bps"],["MODULA","QAM-512",""]],maint:{filtros:0,cambio:"N/A",limpieza:"Oct 2025",alertas:"Ninguna"}},
+        ]
+      }
+    ]
+  }
+};
+
+// Default sala for unknown IDs
+const defaultSala = {
+  name: "Nodo — " + salaId,
+  subtitle: salaId.toUpperCase(),
+  location: "Comodoro Rivadavia / Provincia",
+  lastMaint: "Sin datos",
+  status: "on",
+  racks: [
+    {
+      name: "RACK-01", units: "24U",
+      equipment: [
+        {id:"d1",name:"DWDM",model:"Por definir",type:"dwdm",led:"blue",specs:[["TIPO","DWDM",""],["ESTADO","OK",""]],maint:{filtros:0,cambio:"N/A",limpieza:"N/A",alertas:"Sin datos cargados"}},
+        {id:"d2",name:"SDH",model:"Por definir",type:"sdh",led:"off",specs:[["TIPO","SDH",""],["ESTADO","—",""]],maint:{filtros:0,cambio:"N/A",limpieza:"N/A",alertas:"Sin datos cargados"}},
+        {id:"d3",name:"RADIO",model:"Por definir",type:"radio",led:"off",specs:[["TIPO","Radio",""],["ESTADO","—",""]],maint:{filtros:0,cambio:"N/A",limpieza:"N/A",alertas:"Sin datos cargados"}},
+      ]
+    }
+  ]
+};
+
+const sala = salas[salaId] || defaultSala;
+
+// Render header
+document.getElementById('salaName').textContent = sala.name;
+document.getElementById('salaSubtitle').textContent = sala.subtitle;
+document.getElementById('lastMaint').textContent = sala.lastMaint;
+document.querySelector('.sala-meta').querySelector('span:first-child').innerHTML = '📍 ' + sala.location;
+if(sala.status === 'warn'){
+  document.getElementById('salaStatus').textContent = '⚠ ALERTA';
+  document.getElementById('salaStatus').className = 'status-badge warn';
+}
+// Count total equipment
+let totalEqCount = 0;
+sala.racks.forEach(r => totalEqCount += r.equipment.length);
+document.getElementById('totalEq').textContent = totalEqCount;
+
+// Type labels
+const typeLabel = {dwdm:'DWDM',sdh:'SDH',radio:'RADIO',router:'ROUTER',gpon:'GPON',ups:'UPS',other:'OTRO'};
+
+// Render racks
+const grid = document.getElementById('racksGrid');
+sala.racks.forEach(rack => {
+  const rDiv = document.createElement('div');
+  rDiv.className = 'rack';
+  let slotsHTML = '';
+  rack.equipment.forEach(eq => {
+    slotsHTML += `
+      <div class="eq-slot type-${eq.type}" onclick="showDetail('${eq.id}')" id="slot-${eq.id}">
+        <div class="eq-inner">
+          <span class="eq-led ${eq.led}"></span>
+          <span class="eq-label">${eq.name}</span>
+          <span class="eq-type-badge badge-${eq.type}">${typeLabel[eq.type]||'?'}</span>
+        </div>
+      </div>`;
+  });
+  // Empty slots
+  const empties = Math.max(0, 6 - rack.equipment.length);
+  for(let i=0;i<empties;i++) slotsHTML += '<div class="empty-slot"></div>';
+
+  rDiv.innerHTML = `
+    <div class="rack-header">
+      <span class="rack-name">${rack.name}</span>
+      <span class="rack-units">${rack.units}</span>
+    </div>
+    <div class="rack-body">${slotsHTML}</div>`;
+  grid.appendChild(rDiv);
+});
+
+// All equipment map
+const allEq = {};
+sala.racks.forEach(r => r.equipment.forEach(e => allEq[e.id] = e));
+
+function showDetail(id) {
+  document.querySelectorAll('.eq-slot').forEach(s => s.classList.remove('selected'));
+  const slot = document.getElementById('slot-'+id);
+  if(slot) slot.classList.add('selected');
+  const eq = allEq[id];
+  if(!eq) return;
+
+  const colMap = {dwdm:'var(--accent)',sdh:'var(--accent2)',radio:'var(--warn)',router:'#ff6677',gpon:'#bb88ff',ups:'#ffcc00',other:'var(--dim)'};
+  const specsHTML = eq.specs.map(s=>`<div class="spec-card"><div class="spec-lbl">${s[0]}</div><div class="spec-val">${s[1]} <span class="spec-unit">${s[2]}</span></div></div>`).join('');
+  const alertColor = eq.maint.alertas === 'Ninguna' ? 'ok' : 'warn';
+  const cambioColor = eq.maint.cambio === 'VENCIDO' ? 'warn' : (eq.maint.cambio === 'N/A' ? 'na' : 'ok');
+
+  document.getElementById('detailContent').innerHTML = `
+    <div class="eq-detail">
+      <div class="eq-detail-name" style="color:${colMap[eq.type]}">${eq.name}</div>
+      <div class="eq-detail-model">${eq.model}</div>
+      <div class="panel-title" style="margin-bottom:10px">// ESPECIFICACIONES</div>
+      <div class="spec-grid">${specsHTML}</div>
+      <div class="panel-title" style="margin-bottom:10px">// MANTENIMIENTO</div>
+      <div class="maint-section">
+        <div class="maint-row"><span class="maint-label">Alertas</span><span class="maint-val ${alertColor}">${eq.maint.alertas}</span></div>
+        <div class="maint-row"><span class="maint-label">Últ. limpieza</span><span class="maint-val ok">${eq.maint.limpieza}</span></div>
+        <div class="maint-row"><span class="maint-label">Cambio filtro</span><span class="maint-val ${cambioColor}">${eq.maint.cambio}</span></div>
+      </div>
+      ${eq.maint.filtros > 0 ? `
+      <div class="panel-title" style="margin-bottom:10px">// FILTROS</div>
+      <div class="filter-grid">
+        <div class="filter-box"><div class="filter-num">${eq.maint.filtros}</div><div class="filter-lbl">TOTAL</div></div>
+        <div class="filter-box"><div class="filter-num" style="color:var(--accent2)">0</div><div class="filter-lbl">CAMBIADOS</div></div>
+        <div class="filter-box"><div class="filter-num" style="color:var(--warn)">${eq.maint.filtros}</div><div class="filter-lbl">PENDIENTES</div></div>
+      </div>` : ''}
+    </div>`;
+}
+
+// Clock
+function tick(){const n=new Date();document.getElementById('clock').textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0');}
+setInterval(tick,1000);tick();
+</script>
+</body>
+</html>
