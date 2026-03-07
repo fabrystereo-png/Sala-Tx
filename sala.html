@@ -8,350 +8,683 @@
 <style>
 :root{--bg:#05080f;--panel:#0a1020;--border:#162030;--accent:#00aaff;--accent2:#00ffcc;--warn:#ffaa00;--danger:#ff3344;--text:#9ab8d0;--dim:#3a5060;--glow:0 0 16px rgba(0,170,255,0.3)}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-height:100vh}
-body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.08) 3px,rgba(0,0,0,0.08) 4px);pointer-events:none;z-index:9999}
+body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-height:100vh;overflow:hidden}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px);pointer-events:none;z-index:9999}
 
-header{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:var(--panel);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
-.logo{font-family:'Orbitron',sans-serif;font-size:1rem;font-weight:900;color:var(--accent);letter-spacing:3px}
-.logo span{display:block;font-size:0.6rem;color:var(--dim);letter-spacing:4px;font-family:'Share Tech Mono',monospace;margin-top:2px}
-.header-right{display:flex;align-items:center;gap:14px}
-.btn-back{padding:5px 14px;background:transparent;border:1px solid var(--border);color:var(--text);font-family:'Share Tech Mono',monospace;font-size:0.65rem;cursor:pointer;border-radius:3px;transition:all 0.2s;letter-spacing:1px}
-.btn-back:hover{border-color:var(--accent);color:var(--accent)}
-.clock{font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:var(--accent)}
+header{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:var(--panel);border-bottom:1px solid var(--border);height:50px}
+.logo{font-family:'Orbitron',sans-serif;font-size:.9rem;font-weight:900;color:var(--accent);letter-spacing:3px}
+.logo span{display:block;font-size:.55rem;color:var(--dim);letter-spacing:4px;font-family:'Share Tech Mono',monospace;margin-top:1px}
+.header-right{display:flex;align-items:center;gap:10px}
+.btn{padding:5px 12px;background:transparent;border:1px solid var(--border);color:var(--text);font-family:'Share Tech Mono',monospace;font-size:.62rem;cursor:pointer;border-radius:3px;transition:all .2s;letter-spacing:1px}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{border-color:var(--accent);color:var(--accent);background:rgba(0,170,255,.08)}
+.btn.success{border-color:var(--accent2);color:var(--accent2);background:rgba(0,255,204,.06)}
+.clock{font-family:'Share Tech Mono',monospace;font-size:.78rem;color:var(--accent)}
 
-.page{display:grid;grid-template-columns:1fr 320px;min-height:calc(100vh - 54px)}
+.app{display:flex;flex-direction:column;height:100vh}
+.content{display:flex;flex:1;overflow:hidden}
 
-/* LEFT — Racks */
-.racks-area{padding:24px;overflow-y:auto}
-.sala-header{margin-bottom:24px}
-.sala-name{font-family:'Orbitron',sans-serif;font-size:1.2rem;color:#fff;margin-bottom:4px}
-.sala-meta{font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--dim);display:flex;gap:20px;flex-wrap:wrap}
-.sala-meta span{display:flex;align-items:center;gap:6px}
-.status-badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:3px;font-family:'Share Tech Mono',monospace;font-size:0.65rem}
-.status-badge.on{background:rgba(0,255,204,0.1);color:var(--accent2);border:1px solid rgba(0,255,204,0.25)}
-.status-badge.warn{background:rgba(255,170,0,0.1);color:var(--warn);border:1px solid rgba(255,170,0,0.25)}
+.sala-bar{padding:8px 20px;background:rgba(10,16,32,.9);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px}
+.sala-name{font-family:'Orbitron',sans-serif;font-size:.9rem;color:#fff}
+.sala-status{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:3px;font-family:'Share Tech Mono',monospace;font-size:.6rem}
+.sala-status.on{background:rgba(0,255,204,.1);color:var(--accent2);border:1px solid rgba(0,255,204,.25)}
+.sala-status.warn{background:rgba(255,170,0,.1);color:var(--warn);border:1px solid rgba(255,170,0,.25)}
+.sala-meta{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--dim);display:flex;gap:14px;margin-left:auto}
 
-.racks-grid{display:flex;gap:20px;flex-wrap:wrap}
+.view-tabs{display:flex;gap:2px;padding:0 20px;background:var(--panel);border-bottom:1px solid var(--border)}
+.view-tab{padding:7px 18px;font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;letter-spacing:1px;transition:all .2s}
+.view-tab:hover{color:var(--text)}
+.view-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 
-/* Rack */
-.rack{background:var(--panel);border:1px solid var(--border);border-radius:6px;width:200px;flex-shrink:0;overflow:hidden;position:relative}
-.rack::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent)}
-.rack-header{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-.rack-name{font-family:'Orbitron',sans-serif;font-size:0.7rem;color:var(--accent);letter-spacing:1px}
-.rack-units{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--dim)}
-.rack-body{padding:6px}
+.main-area{flex:1;display:flex;overflow:hidden}
 
-/* Equipment slot in rack */
-.eq-slot{margin-bottom:3px;cursor:pointer;border-radius:3px;overflow:hidden;transition:all 0.15s}
-.eq-slot:hover{transform:translateX(2px)}
-.eq-slot.selected{outline:1px solid var(--accent2)}
-.eq-inner{padding:5px 8px;display:flex;align-items:center;gap:7px;position:relative}
-.eq-led{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.eq-led.green{background:var(--accent2);box-shadow:0 0 5px rgba(0,255,204,0.6)}
-.eq-led.blue{background:var(--accent);box-shadow:0 0 5px rgba(0,170,255,0.6)}
-.eq-led.yellow{background:var(--warn);box-shadow:0 0 5px rgba(255,170,0,0.6);animation:pulse 1.5s infinite}
-.eq-led.red{background:var(--danger);animation:pulse 1s infinite}
+/* FLOOR PLAN */
+#viewPlan{flex:1;position:relative;overflow:hidden}
+.plan-controls{position:absolute;top:12px;right:12px;z-index:20;display:flex;flex-direction:column;gap:5px;align-items:center}
+.zoom-btn{width:30px;height:30px;background:var(--panel);border:1px solid var(--border);color:var(--text);font-size:1rem;cursor:pointer;border-radius:4px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.zoom-btn:hover{border-color:var(--accent);color:var(--accent)}
+.zoom-level{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--dim);text-align:center}
+.plan-canvas{position:absolute;inset:0;cursor:grab}
+.plan-canvas:active{cursor:grabbing}
+.plan-inner{position:absolute;transform-origin:0 0;transition:transform .05s}
+.floor-bg{position:absolute;top:-1000px;left:-1000px;right:-1000px;bottom:-1000px;width:4000px;height:4000px;background-image:linear-gradient(rgba(0,170,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(0,170,255,.035) 1px,transparent 1px);background-size:40px 40px}
+.room-boundary{position:absolute;border:2px solid rgba(0,170,255,.18);border-radius:8px;background:rgba(0,170,255,.01)}
+.ingreso-label{position:absolute;font-family:'Share Tech Mono',monospace;font-size:.6rem;color:rgba(0,170,255,.4);letter-spacing:3px}
+
+.aisle-zone{position:absolute;background:rgba(0,170,255,.025);border:1px dashed rgba(0,170,255,.12);border-radius:4px}
+.aisle-label-fp{position:absolute;font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(0,170,255,.3);letter-spacing:2px;white-space:nowrap}
+
+.fp-rack{position:absolute;cursor:pointer}
+.fp-rack-body{background:var(--panel);border:1px solid var(--border);border-radius:3px;height:100%;width:100%;display:flex;flex-direction:column;overflow:hidden;transition:all .2s;position:relative}
+.fp-rack:hover .fp-rack-body{border-color:var(--accent);box-shadow:0 0 10px rgba(0,170,255,.25)}
+.fp-rack.sel .fp-rack-body{border-color:var(--accent2);box-shadow:0 0 12px rgba(0,255,204,.35)}
+.fp-rack-hdr{background:rgba(0,170,255,.1);padding:3px 6px;font-family:'Share Tech Mono',monospace;font-size:.52rem;color:var(--accent);border-bottom:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fp-rack-slots{flex:1;padding:3px;display:flex;flex-direction:column;gap:1px;overflow:hidden}
+.fp-mini-slot{height:7px;border-radius:1px;border-left:2px solid}
+.fp-rack-foot{font-family:'Share Tech Mono',monospace;font-size:.5rem;color:var(--dim);text-align:center;padding:2px;border-top:1px solid var(--border)}
+.fp-status-dot{position:absolute;top:4px;right:4px;width:5px;height:5px;border-radius:50%}
+
+/* LIST VIEW */
+#viewList{flex:1;overflow-y:auto;padding:16px 20px}
+.aisle-section{background:rgba(255,255,255,.01);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:16px}
+.aisle-hdr{padding:9px 14px;background:rgba(0,170,255,.05);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.aisle-title{font-family:'Orbitron',sans-serif;font-size:.72rem;color:var(--accent);letter-spacing:2px}
+.racks-row{display:flex;gap:10px;padding:10px;flex-wrap:wrap}
+.rack-card{background:var(--panel);border:1px solid var(--border);border-radius:5px;width:185px;flex-shrink:0;overflow:hidden;cursor:pointer;transition:all .2s;position:relative}
+.rack-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+.rack-card:hover{border-color:var(--accent);transform:translateY(-1px)}
+.rack-card.sel{border-color:var(--accent2)}
+.rack-hdr{padding:7px 10px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.rack-name-lbl{font-family:'Orbitron',sans-serif;font-size:.62rem;color:var(--accent);letter-spacing:1px}
+.rack-u-lbl{font-family:'Share Tech Mono',monospace;font-size:.55rem;color:var(--dim)}
+.rack-body-inner{padding:4px}
+.eq-slot{margin-bottom:2px;border-radius:3px;overflow:hidden;cursor:pointer;transition:all .15s}
+.eq-slot:hover{filter:brightness(1.3)}
+.eq-slot.sel{outline:1px solid var(--accent2)}
+.eq-inner{padding:4px 7px;display:flex;align-items:center;gap:5px}
+.eq-led{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.eq-led.green{background:var(--accent2);box-shadow:0 0 4px rgba(0,255,204,.6)}
+.eq-led.blue{background:var(--accent)}
+.eq-led.yellow{background:var(--warn);animation:blink 1.5s infinite}
+.eq-led.red{background:var(--danger);animation:blink 1s infinite}
 .eq-led.off{background:var(--dim)}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
-.eq-label{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.eq-type-badge{font-size:0.55rem;padding:1px 5px;border-radius:2px;font-family:'Share Tech Mono',monospace;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.eq-lbl{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.eq-badge{font-size:.48rem;padding:1px 4px;border-radius:2px;font-family:'Share Tech Mono',monospace;flex-shrink:0}
+.empty-slot-sm{height:9px;background:rgba(0,0,0,.3);border-radius:1px;margin-bottom:2px;opacity:.2}
 
-/* Equipment type colors */
-.type-dwdm{background:rgba(0,170,255,0.12);color:var(--accent);border-left:2px solid var(--accent)}
-.type-sdh{background:rgba(0,255,204,0.08);color:var(--accent2);border-left:2px solid var(--accent2)}
-.type-radio{background:rgba(255,170,0,0.08);color:var(--warn);border-left:2px solid var(--warn)}
-.type-router{background:rgba(255,51,68,0.08);color:#ff6677;border-left:2px solid #ff3344}
-.type-gpon{background:rgba(150,100,255,0.08);color:#bb88ff;border-left:2px solid #9955ff}
-.type-other{background:rgba(255,255,255,0.04);color:var(--dim);border-left:2px solid var(--dim)}
-.type-ups{background:rgba(255,200,0,0.08);color:#ffcc00;border-left:2px solid #ffcc00}
+.t-dwdm{background:rgba(0,170,255,.09);border-left:2px solid var(--accent)}
+.t-sdh{background:rgba(0,255,204,.06);border-left:2px solid var(--accent2)}
+.t-radio{background:rgba(255,170,0,.06);border-left:2px solid var(--warn)}
+.t-router{background:rgba(255,51,68,.06);border-left:2px solid var(--danger)}
+.t-gpon{background:rgba(150,100,255,.06);border-left:2px solid #9955ff}
+.t-ups{background:rgba(255,200,0,.06);border-left:2px solid #ffcc00}
+.t-other{background:rgba(255,255,255,.03);border-left:2px solid var(--dim)}
+.b-dwdm{background:rgba(0,170,255,.2);color:var(--accent)}
+.b-sdh{background:rgba(0,255,204,.15);color:var(--accent2)}
+.b-radio{background:rgba(255,170,0,.15);color:var(--warn)}
+.b-router{background:rgba(255,51,68,.15);color:#ff6677}
+.b-gpon{background:rgba(150,100,255,.15);color:#bb88ff}
+.b-ups{background:rgba(255,200,0,.15);color:#ffcc00}
+.b-other{background:rgba(255,255,255,.06);color:var(--dim)}
 
-.badge-dwdm{background:rgba(0,170,255,0.2);color:var(--accent)}
-.badge-sdh{background:rgba(0,255,204,0.15);color:var(--accent2)}
-.badge-radio{background:rgba(255,170,0,0.15);color:var(--warn)}
-.badge-router{background:rgba(255,51,68,0.15);color:#ff6677}
-.badge-gpon{background:rgba(150,100,255,0.15);color:#bb88ff}
-.badge-ups{background:rgba(255,200,0,0.15);color:#ffcc00}
-.badge-other{background:rgba(255,255,255,0.06);color:var(--dim)}
+/* EDITOR */
+#viewEditor{flex:1;overflow-y:auto;padding:16px}
+.ed-grid{display:grid;grid-template-columns:260px 1fr;gap:14px}
+.ed-card{background:var(--panel);border:1px solid var(--border);border-radius:5px;overflow:hidden;margin-bottom:10px}
+.ed-card-hdr{padding:8px 12px;background:rgba(0,170,255,.06);border-bottom:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--accent);letter-spacing:2px;display:flex;justify-content:space-between;align-items:center}
+.ed-card-body{padding:10px}
+.fg{margin-bottom:9px}
+.fg label{display:block;font-family:'Share Tech Mono',monospace;font-size:.56rem;color:var(--dim);letter-spacing:1px;margin-bottom:4px;text-transform:uppercase}
+.fg input,.fg select{width:100%;background:rgba(0,170,255,.04);border:1px solid var(--border);color:#fff;padding:6px 10px;font-family:'Share Tech Mono',monospace;font-size:.72rem;border-radius:3px;outline:none;transition:all .2s}
+.fg input:focus,.fg select:focus{border-color:var(--accent)}
+.fg select option{background:#0a1020}
+.tree-aisle{margin-bottom:8px}
+.tree-aisle-hdr{display:flex;align-items:center;gap:5px;padding:5px 8px;background:rgba(0,170,255,.06);border:1px solid var(--border);border-radius:3px;cursor:default}
+.tree-aisle-name{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--accent);flex:1}
+.tree-rack{display:flex;align-items:center;gap:5px;padding:4px 8px 4px 18px;border-radius:3px;cursor:pointer;transition:all .2s}
+.tree-rack:hover{background:rgba(0,170,255,.05)}
+.tree-rack.sel{background:rgba(0,255,204,.05);color:var(--accent2)}
+.tree-rack-name{font-family:'Share Tech Mono',monospace;font-size:.62rem;flex:1}
+.icon-btn{background:none;border:none;cursor:pointer;font-size:.75rem;padding:2px 4px;border-radius:2px;transition:all .2s;color:var(--dim)}
+.icon-btn:hover{background:rgba(0,170,255,.1);color:var(--accent)}
+.icon-btn.del:hover{background:rgba(255,51,68,.1);color:var(--danger)}
+.eq-ed-list{display:flex;flex-direction:column;gap:3px;max-height:280px;overflow-y:auto;margin-bottom:8px}
+.eq-ed-item{display:flex;align-items:center;gap:6px;padding:5px 8px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:3px}
+.eq-ed-name{font-family:'Share Tech Mono',monospace;font-size:.62rem;flex:1}
+.btn-add-eq{width:100%;padding:6px;background:rgba(0,255,204,.05);border:1px dashed rgba(0,255,204,.2);color:var(--accent2);font-family:'Share Tech Mono',monospace;font-size:.62rem;cursor:pointer;border-radius:3px;transition:all .2s}
+.btn-add-eq:hover{background:rgba(0,255,204,.1)}
 
-.empty-slot{height:14px;background:rgba(0,0,0,0.3);border-radius:2px;margin-bottom:3px;opacity:0.3}
+/* DETAIL PANEL */
+.detail-panel{width:290px;flex-shrink:0;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column}
+.dp-hdr{padding:10px 14px;border-bottom:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--dim);letter-spacing:3px}
+.dp-body{flex:1;overflow-y:auto;padding:12px}
+.dp-empty{text-align:center;padding:40px 10px;color:var(--dim);font-family:'Share Tech Mono',monospace;font-size:.72rem;line-height:2.4}
+.eq-det-name{font-family:'Orbitron',sans-serif;font-size:.88rem;margin-bottom:2px}
+.eq-det-model{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--dim);margin-bottom:12px}
+.dp-sec{font-family:'Share Tech Mono',monospace;font-size:.56rem;color:var(--dim);letter-spacing:3px;padding-bottom:6px;border-bottom:1px solid var(--border);margin:12px 0 8px}
+.maint-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.74rem}
+.mv-ok{color:var(--accent2);font-family:'Share Tech Mono',monospace;font-size:.62rem}
+.mv-warn{color:var(--warn);font-family:'Share Tech Mono',monospace;font-size:.62rem}
+.mv-na{color:var(--dim);font-family:'Share Tech Mono',monospace;font-size:.62rem}
+.filter-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:8px}
+.filter-box{background:rgba(255,255,255,.02);border:1px solid var(--border);padding:6px;border-radius:3px;text-align:center}
+.filter-num{font-family:'Orbitron',monospace;font-size:1rem;color:#fff;font-weight:700}
+.filter-lbl{font-family:'Share Tech Mono',monospace;font-size:.48rem;color:var(--dim);margin-top:1px}
 
-/* RIGHT PANEL */
-.detail-panel{background:var(--panel);border-left:1px solid var(--border);padding:20px 16px;overflow-y:auto}
-.panel-title{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--dim);letter-spacing:3px;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:14px}
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;display:none;align-items:center;justify-content:center}
+.modal-bg.show{display:flex}
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:22px;width:360px;position:relative;max-height:90vh;overflow-y:auto}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+.modal-title{font-family:'Orbitron',sans-serif;font-size:.82rem;color:var(--accent);margin-bottom:14px}
+.modal-actions{display:flex;gap:8px;margin-top:14px;justify-content:flex-end}
 
-.detail-empty{text-align:center;padding:40px 10px;color:var(--dim);font-size:0.8rem;font-family:'Share Tech Mono',monospace;line-height:2.2}
-
-.eq-detail{animation:fadeIn 0.25s ease}
-@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-.eq-detail-name{font-family:'Orbitron',sans-serif;font-size:0.95rem;color:#fff;margin-bottom:2px}
-.eq-detail-model{font-family:'Share Tech Mono',monospace;font-size:0.68rem;color:var(--dim);margin-bottom:14px}
-
-.spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:16px}
-.spec-card{background:rgba(255,255,255,0.02);border:1px solid var(--border);padding:9px;border-radius:4px}
-.spec-lbl{font-size:0.58rem;font-family:'Share Tech Mono',monospace;color:var(--dim);letter-spacing:1px;margin-bottom:3px}
-.spec-val{font-size:0.88rem;color:#fff;font-weight:600}
-.spec-unit{font-size:0.6rem;color:var(--dim)}
-
-.maint-section{margin-bottom:16px}
-.maint-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.78rem}
-.maint-label{color:var(--text)}
-.maint-val{font-family:'Share Tech Mono',monospace;font-size:0.68rem}
-.maint-val.ok{color:var(--accent2)}
-.maint-val.warn{color:var(--warn)}
-.maint-val.na{color:var(--dim)}
-
-.filter-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-top:8px}
-.filter-box{background:rgba(255,255,255,0.02);border:1px solid var(--border);padding:7px;border-radius:3px;text-align:center}
-.filter-num{font-family:'Orbitron',monospace;font-size:1.1rem;color:#fff;font-weight:700}
-.filter-lbl{font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:var(--dim);margin-top:2px}
-
-.bar-meter{margin-bottom:10px}
-.bar-label{display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:3px;color:var(--dim)}
-.bar-track{height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
-.bar-fill{height:100%;border-radius:2px}
-.bar-fill.cyan{background:linear-gradient(90deg,#004466,var(--accent))}
-.bar-fill.green{background:linear-gradient(90deg,#00331a,var(--accent2))}
-.bar-fill.warn{background:linear-gradient(90deg,#331a00,var(--warn))}
-
-::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
-
+<div class="app">
 <header>
-  <div class="logo">NOC PATAGONIA <span id="salaSubtitle">CARGANDO...</span></div>
+  <div class="logo">TX PATAGONIA <span id="salaSubtitle">CARGANDO...</span></div>
   <div class="header-right">
     <div class="clock" id="clock">--:--:--</div>
-    <button class="btn-back" onclick="window.location.href='selector.html'">← VOLVER AL MAPA</button>
+    <button class="btn" onclick="window.location.href='/selector.html'">← MAPA</button>
   </div>
 </header>
 
-<div class="page">
-  <div class="racks-area">
-    <div class="sala-header">
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px">
-        <div class="sala-name" id="salaName">Cargando...</div>
-        <div class="status-badge on" id="salaStatus">● ACTIVO</div>
-      </div>
-      <div class="sala-meta" id="salaMeta">
-        <span>📍 Comodoro Rivadavia</span>
-        <span>🗓 Último mant: <span style="color:var(--accent2)" id="lastMaint">--/--/----</span></span>
-        <span>🔧 Equipos: <span style="color:#fff" id="totalEq">--</span></span>
+<div class="sala-bar">
+  <div class="sala-name" id="salaName">...</div>
+  <div class="sala-status on" id="salaStatus">● ACTIVO</div>
+  <div class="sala-meta">
+    <span>📍 <span id="salaLoc">...</span></span>
+    <span>🗓 Mant: <span id="salaMaint">...</span></span>
+    <span>🔧 <span id="salaEqCount">0</span> equipos</span>
+  </div>
+</div>
+
+<div class="view-tabs">
+  <div class="view-tab active" onclick="switchView('plan',this)">🗺️ PLANO</div>
+  <div class="view-tab" onclick="switchView('list',this)">📋 LISTA</div>
+  <div class="view-tab" onclick="switchView('editor',this)">✏️ EDITOR</div>
+</div>
+
+<div class="content">
+  <!-- FLOOR PLAN -->
+  <div id="viewPlan" style="display:flex;flex:1;position:relative;overflow:hidden">
+    <div class="plan-canvas" id="planCanvas">
+      <div class="plan-inner" id="planInner">
+        <div class="floor-bg"></div>
       </div>
     </div>
-    <div class="racks-grid" id="racksGrid">
-      <!-- Racks inserted by JS -->
+    <div class="plan-controls">
+      <button class="zoom-btn" onclick="doZoom(1.2)">+</button>
+      <div class="zoom-level" id="zoomLvl">100%</div>
+      <button class="zoom-btn" onclick="doZoom(0.83)">−</button>
+      <button class="zoom-btn" onclick="resetView()" title="Reset">⌖</button>
     </div>
   </div>
 
-  <div class="detail-panel">
-    <div class="panel-title">// DETALLE DEL EQUIPO</div>
-    <div id="detailContent">
-      <div class="detail-empty">← HACÉ CLIC EN<br>UN EQUIPO<br>PARA VER DETALLES</div>
+  <!-- LIST -->
+  <div id="viewList" style="display:none;flex:1;overflow-y:auto;padding:16px 20px">
+    <div id="listCont"></div>
+  </div>
+
+  <!-- EDITOR -->
+  <div id="viewEditor" style="display:none;flex:1;overflow-y:auto;padding:14px">
+    <div class="ed-grid">
+      <div>
+        <div class="ed-card">
+          <div class="ed-card-hdr">// INFO DE SALA</div>
+          <div class="ed-card-body">
+            <div class="fg"><label>Nombre</label><input id="ed-name" type="text"/></div>
+            <div class="fg"><label>Ubicación</label><input id="ed-loc" type="text"/></div>
+            <div class="fg"><label>Último mantenimiento</label><input id="ed-maint" type="text" placeholder="DD/MM/AAAA"/></div>
+            <div class="fg"><label>Estado</label>
+              <select id="ed-status"><option value="on">ACTIVO</option><option value="warn">ALERTA</option><option value="off">INACTIVO</option></select>
+            </div>
+            <button class="btn primary" onclick="saveSalaInfo()" style="width:100%;margin-top:4px">GUARDAR</button>
+          </div>
+        </div>
+        <div class="ed-card">
+          <div class="ed-card-hdr">// PASILLOS Y RACKS <button class="icon-btn" onclick="addAisle()">+ Pasillo</button></div>
+          <div class="ed-card-body"><div id="edTree"></div></div>
+        </div>
+      </div>
+      <div class="ed-card" style="align-self:start">
+        <div class="ed-card-hdr">// RACK: <span id="edRackTitle">—</span></div>
+        <div class="ed-card-body" id="edRackBody"><div style="color:var(--dim);font-family:'Share Tech Mono',monospace;font-size:.72rem;padding:30px;text-align:center">← Seleccioná un rack</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETAIL PANEL -->
+  <div class="detail-panel" id="detPanel">
+    <div class="dp-hdr">// DETALLE DEL EQUIPO</div>
+    <div class="dp-body" id="dpBody"><div class="dp-empty">← CLIC EN<br>UN EQUIPO</div></div>
+  </div>
+</div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">EQUIPO</div>
+    <div class="fg"><label>Nombre</label><input id="m-name" type="text" placeholder="Ej: CIENA 6500"/></div>
+    <div class="fg"><label>Modelo completo</label><input id="m-model" type="text" placeholder="Ej: Ciena 6500-T12"/></div>
+    <div class="fg"><label>Tipo</label>
+      <select id="m-type">
+        <option value="dwdm">DWDM</option><option value="sdh">SDH</option><option value="radio">RADIO</option>
+        <option value="router">ROUTER / SWITCH</option><option value="gpon">GPON / ADSL</option>
+        <option value="ups">UPS</option><option value="other">OTRO</option>
+      </select>
+    </div>
+    <div class="fg"><label>Estado</label>
+      <select id="m-led">
+        <option value="green">● ACTIVO</option><option value="blue">● EN LÍNEA</option>
+        <option value="yellow">⚠ ALERTA</option><option value="red">✕ FALLA</option><option value="off">— APAGADO</option>
+      </select>
+    </div>
+    <div class="fg"><label>Alertas / Observaciones</label><input id="m-alert" type="text" placeholder="Ninguna"/></div>
+    <div class="fg"><label>Cantidad de filtros</label><input id="m-filtros" type="number" value="0" min="0"/></div>
+    <div class="fg"><label>Próximo cambio de filtro</label><input id="m-cambio" type="text" placeholder="N/A o Ene 2026"/></div>
+    <div class="fg"><label>Última limpieza</label><input id="m-limpieza" type="text" placeholder="Dic 2025"/></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">CANCELAR</button>
+      <button class="btn success" onclick="saveEq()">GUARDAR</button>
     </div>
   </div>
 </div>
 
 <script>
-if(!sessionStorage.getItem('noc_auth')){window.location.href='index.html';}
+if(!sessionStorage.getItem('noc_auth')){window.location.href='/index.html';}
 
-// Parse URL param
-const params = new URLSearchParams(window.location.search);
-const salaId = params.get('id') || 'tx01centro4';
+const params=new URLSearchParams(window.location.search);
+const salaId=params.get('id')||'tx01centro4';
+const SK='noc_sala_'+salaId;
 
-// ===================== SALA DATA =====================
-const salas = {
-  tx01centro4: {
-    name: "Sala Tx01 — Centro 4° Piso",
-    subtitle: "SALA TX01 · CENTRO · 4TO PISO",
-    location: "Comodoro Rivadavia — Centro",
-    lastMaint: "15/01/2026",
-    status: "on",
-    racks: [
-      {
-        name: "RACK-01", units: "42U",
-        equipment: [
-          {id:"e1",name:"CIENA 6500",model:"Ciena 6500-T12",type:"dwdm",led:"green",specs:[["CANALES","88","λ"],["VELOCIDAD","100G","WDM"],["AMPLIF","EDFA","x4"]],maint:{filtros:2,cambio:"Feb 2026",limpieza:"Ene 2026",alertas:"Ninguna"}},
-          {id:"e2",name:"HUAWEI OSN9800",model:"Huawei OSN 9800",type:"dwdm",led:"green",specs:[["TARJETAS","16","OTU4"],["CAPACIDAD","4T","bps"],["GESTIÓN","iManager","U2000"]],maint:{filtros:4,cambio:"Mar 2026",limpieza:"Ene 2026",alertas:"Ninguna"}},
-          {id:"e3",name:"HIT 7200",model:"Sycamore HiT 7200",type:"dwdm",led:"blue",specs:[["TIPO","DWDM","Metro"],["PUERTOS","32","SDH"],["AMPLIF","Raman",""]],maint:{filtros:2,cambio:"Abr 2026",limpieza:"Feb 2026",alertas:"Ninguna"}},
-          {id:"e4",name:"HIT 7025",model:"Sycamore HiT 7025",type:"sdh",led:"green",specs:[["TRAMA","STM-64","SDH"],["PUERTOS","16","STM-1"],["PROTEC","MSP","1+1"]],maint:{filtros:0,cambio:"N/A",limpieza:"Dic 2025",alertas:"Ninguna"}},
-          {id:"e5",name:"CISCO 2900",model:"Cisco 2921 ISR",type:"router",led:"green",specs:[["TIPO","Router","Gestión"],["PUERTOS","4","GbE"],["RAM","2","GB"]],maint:{filtros:0,cambio:"N/A",limpieza:"Dic 2025",alertas:"Ninguna"}},
-        ]
-      },
-      {
-        name: "RACK-02", units: "42U",
-        equipment: [
-          {id:"e6",name:"NEC PASOLINK",model:"NEC iPASOLINK EX",type:"radio",led:"green",specs:[["BANDA","11","GHz"],["CAPACIDAD","2×1G","bps"],["MODULA","QAM-1024",""]],maint:{filtros:0,cambio:"N/A",limpieza:"Nov 2025",alertas:"Ninguna"}},
-          {id:"e7",name:"SIAE ALC+",model:"SIAE ALC Plus2",type:"radio",led:"green",specs:[["BANDA","18","GHz"],["CAPACIDAD","500M","bps"],["PROTEC","1+1","XPIC"]],maint:{filtros:0,cambio:"N/A",limpieza:"Nov 2025",alertas:"Ninguna"}},
-          {id:"e8",name:"ZTE ZXMW",model:"ZTE ZXMW NR8250",type:"radio",led:"yellow",specs:[["BANDA","23","GHz"],["CAPACIDAD","400M","bps"],["ESTADO","WARN","BER alto"]],maint:{filtros:0,cambio:"N/A",limpieza:"Oct 2025",alertas:"⚠ BER elevado — revisar"}},
-          {id:"e9",name:"HUAWEI S3352",model:"Huawei S3352P-EI",type:"router",led:"green",specs:[["TIPO","Switch","L3"],["PUERTOS","48","FE"],["UPLINK","4","GbE"]],maint:{filtros:0,cambio:"N/A",limpieza:"Dic 2025",alertas:"Ninguna"}},
-          {id:"e10",name:"APC UPS",model:"APC Smart-UPS 3000",type:"ups",led:"green",specs:[["CARGA","62","%"],["BATERÍA","91","%"],["AUTONOM","28","min"]],maint:{filtros:0,cambio:"N/A",limpieza:"Ene 2026",alertas:"Ninguna"}},
-        ]
-      },
-      {
-        name: "RACK-03", units: "24U",
-        equipment: [
-          {id:"e11",name:"FUSION SW",model:"Fusion Splicing Sys",type:"other",led:"green",specs:[["TIPO","Splicing","Fiber"],["PUERTOS","96","FC"],["PANEL","24","U"]],maint:{filtros:6,cambio:"Mar 2026",limpieza:"Ene 2026",alertas:"Ninguna"}},
-          {id:"e12",name:"CIENA 3930",model:"Ciena 3930 Service",type:"dwdm",led:"blue",specs:[["TIPO","Carrier","Eth"],["PUERTOS","20","GbE"],["MPLS","Sí","T-MPLS"]],maint:{filtros:1,cambio:"Abr 2026",limpieza:"Feb 2026",alertas:"Ninguna"}},
-        ]
-      }
+// Default data
+const DEFAULTS={
+  tx01centro4:{name:"Sala Tx01 — Centro 4° Piso",subtitle:"SALA TX01 · CENTRO · 4TO PISO",location:"Comodoro Rivadavia — Centro",lastMaint:"15/01/2026",status:"on",
+    aisles:[
+      {id:"a1",name:"Pasillo N°01",racks:[
+        {id:"r1",name:"RACK-01",units:"42U",equipment:[
+          {id:"e1",name:"CIENA 6500",model:"Ciena 6500-T12",type:"dwdm",led:"green",alert:"Ninguna",filtros:2,cambio:"Feb 2026",limpieza:"Ene 2026"},
+          {id:"e2",name:"HUAWEI OSN9800",model:"Huawei OSN 9800",type:"dwdm",led:"green",alert:"Ninguna",filtros:4,cambio:"Mar 2026",limpieza:"Ene 2026"},
+          {id:"e3",name:"HIT 7200",model:"Sycamore HiT 7200",type:"dwdm",led:"blue",alert:"Ninguna",filtros:2,cambio:"Abr 2026",limpieza:"Feb 2026"},
+          {id:"e4",name:"HIT 7025",model:"Sycamore HiT 7025",type:"sdh",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Dic 2025"},
+          {id:"e5",name:"CISCO 2900",model:"Cisco 2921 ISR",type:"router",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Dic 2025"},
+        ]},
+        {id:"r2",name:"RACK-02",units:"42U",equipment:[
+          {id:"e6",name:"NEC PASOLINK",model:"NEC iPASOLINK EX",type:"radio",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Nov 2025"},
+          {id:"e7",name:"SIAE ALC+",model:"SIAE ALC Plus2",type:"radio",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Nov 2025"},
+          {id:"e8",name:"ZTE ZXMW",model:"ZTE ZXMW NR8250",type:"radio",led:"yellow",alert:"⚠ BER elevado — revisar",filtros:0,cambio:"N/A",limpieza:"Oct 2025"},
+          {id:"e9",name:"HUAWEI S3352",model:"Huawei S3352P-EI",type:"router",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Dic 2025"},
+          {id:"e10",name:"APC UPS",model:"APC Smart-UPS 3000",type:"ups",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Ene 2026"},
+        ]},
+      ]},
+      {id:"a2",name:"Pasillo N°02",racks:[
+        {id:"r3",name:"RACK-03",units:"24U",equipment:[
+          {id:"e11",name:"FUSION SW",model:"Fusion Splicing Sys",type:"other",led:"green",alert:"Ninguna",filtros:6,cambio:"Mar 2026",limpieza:"Ene 2026"},
+          {id:"e12",name:"CIENA 3930",model:"Ciena 3930 Service",type:"dwdm",led:"blue",alert:"Ninguna",filtros:1,cambio:"Abr 2026",limpieza:"Feb 2026"},
+        ]},
+      ]},
     ]
   },
-  vpuey: {
-    name: "Sala Tx01 — Villa Pueyrredón",
-    subtitle: "SALA TX01 · VILLA PUEYRREDÓN",
-    location: "Comodoro Rivadavia — V. Pueyrredón",
-    lastMaint: "10/01/2026",
-    status: "on",
-    racks: [
-      {
-        name: "RACK-01", units: "42U",
-        equipment: [
-          {id:"v1",name:"CORIANT DWDM",model:"Coriant 7100 Nano",type:"dwdm",led:"green",specs:[["CANALES","40","λ"],["VELOCIDAD","10G","WDM"],["SPAN","80","km"]],maint:{filtros:3,cambio:"Mar 2026",limpieza:"Ene 2026",alertas:"Ninguna"}},
-          {id:"v2",name:"HIT 7025",model:"Sycamore HiT 7025",type:"sdh",led:"green",specs:[["TRAMA","STM-16","SDH"],["PUERTOS","8","STM-1"],["PROTEC","SNCP",""]],maint:{filtros:0,cambio:"N/A",limpieza:"Dic 2025",alertas:"Ninguna"}},
-          {id:"v3",name:"NEC PASOLINK",model:"NEC iPASOLINK VR",type:"radio",led:"green",specs:[["BANDA","6","GHz"],["CAPACIDAD","400M","bps"],["MODULA","QAM-256",""]],maint:{filtros:0,cambio:"N/A",limpieza:"Nov 2025",alertas:"Ninguna"}},
-          {id:"v4",name:"CISCO 3650",model:"Cisco Catalyst 3650",type:"router",led:"green",specs:[["TIPO","Switch","L3"],["PUERTOS","48","GbE"],["UPLINK","4","10G"]],maint:{filtros:0,cambio:"N/A",limpieza:"Dic 2025",alertas:"Ninguna"}},
-        ]
-      },
-      {
-        name: "RACK-02", units: "42U",
-        equipment: [
-          {id:"v5",name:"GPON HUAWEI",model:"Huawei MA5608T",type:"gpon",led:"green",specs:[["PUERTOS","16","GPON"],["SUSCR","1024","ONT"],["VELOCIDAD","2.5G","ds"]],maint:{filtros:2,cambio:"Feb 2026",limpieza:"Ene 2026",alertas:"Ninguna"}},
-          {id:"v6",name:"ADSL ALCATEL",model:"Alcatel-Lucent 7330",type:"other",led:"yellow",specs:[["PUERTOS","48","ADSL2+"],["BONDING","Sí",""],["VDSL2","Sí","17MHz"]],maint:{filtros:4,cambio:"Feb 2026",limpieza:"Dic 2025",alertas:"⚠ Filtro vencido"}},
-          {id:"v7",name:"SIAE LINK",model:"SIAE ALFOplus2",type:"radio",led:"green",specs:[["BANDA","28","GHz"],["CAPACIDAD","1G","bps"],["DISTANCIA","5","km"]],maint:{filtros:0,cambio:"N/A",limpieza:"Nov 2025",alertas:"Ninguna"}},
-        ]
-      }
-    ]
-  },
-  cerrotanque: {
-    name: "Sala Tx01 — Cerro Tanque",
-    subtitle: "SALA TX01 · CERRO TANQUE",
-    location: "Comodoro Rivadavia — Cerro Tanque",
-    lastMaint: "20/11/2025",
-    status: "warn",
-    racks: [
-      {
-        name: "RACK-01", units: "24U",
-        equipment: [
-          {id:"ct1",name:"CIENA 6500",model:"Ciena 6500-T8",type:"dwdm",led:"yellow",specs:[["CANALES","40","λ"],["VELOCIDAD","10G","WDM"],["ALERTA","WARN","Temp alta"]],maint:{filtros:2,cambio:"VENCIDO",limpieza:"Nov 2025",alertas:"⚠ Temperatura elevada — limpieza urgente"}},
-          {id:"ct2",name:"HIT 7025",model:"Sycamore HiT 7025",type:"sdh",led:"green",specs:[["TRAMA","STM-4","SDH"],["PUERTOS","4","STM-1"],["PROTEC","MSP",""]],maint:{filtros:0,cambio:"N/A",limpieza:"Nov 2025",alertas:"Ninguna"}},
-          {id:"ct3",name:"NEC PASOLINK",model:"NEC iPASOLINK X",type:"radio",led:"green",specs:[["BANDA","15","GHz"],["CAPACIDAD","300M","bps"],["MODULA","QAM-512",""]],maint:{filtros:0,cambio:"N/A",limpieza:"Oct 2025",alertas:"Ninguna"}},
-        ]
-      }
-    ]
-  }
+  vpuey:{name:"Sala Tx01 — Villa Pueyrredón",subtitle:"SALA TX01 · VILLA PUEYRREDÓN",location:"Comodoro Rivadavia — V. Pueyrredón",lastMaint:"10/01/2026",status:"on",aisles:[]},
 };
 
-// Default sala for unknown IDs
-const defaultSala = {
-  name: "Nodo — " + salaId,
-  subtitle: salaId.toUpperCase(),
-  location: "Comodoro Rivadavia / Provincia",
-  lastMaint: "Sin datos",
-  status: "on",
-  racks: [
-    {
-      name: "RACK-01", units: "24U",
-      equipment: [
-        {id:"d1",name:"DWDM",model:"Por definir",type:"dwdm",led:"blue",specs:[["TIPO","DWDM",""],["ESTADO","OK",""]],maint:{filtros:0,cambio:"N/A",limpieza:"N/A",alertas:"Sin datos cargados"}},
-        {id:"d2",name:"SDH",model:"Por definir",type:"sdh",led:"off",specs:[["TIPO","SDH",""],["ESTADO","—",""]],maint:{filtros:0,cambio:"N/A",limpieza:"N/A",alertas:"Sin datos cargados"}},
-        {id:"d3",name:"RADIO",model:"Por definir",type:"radio",led:"off",specs:[["TIPO","Radio",""],["ESTADO","—",""]],maint:{filtros:0,cambio:"N/A",limpieza:"N/A",alertas:"Sin datos cargados"}},
-      ]
+let sala=null, curView='plan', selEqId=null, selRackId=null, edRackId=null, editEqId=null, modalRackId=null;
+let scale=1, px=50, py=50, panning=false, psx,psy,ppx,ppy;
+
+const TL={dwdm:'DWDM',sdh:'SDH',radio:'RADIO',router:'ROUTER',gpon:'GPON',ups:'UPS',other:'OTRO'};
+const TC={dwdm:'var(--accent)',sdh:'var(--accent2)',radio:'var(--warn)',router:'#ff6677',gpon:'#bb88ff',ups:'#ffcc00',other:'var(--dim)'};
+const SC={dwdm:'rgba(0,50,100,.6)',sdh:'rgba(0,60,40,.6)',radio:'rgba(80,50,0,.6)',router:'rgba(80,0,15,.6)',gpon:'rgba(50,0,100,.6)',ups:'rgba(80,60,0,.6)',other:'rgba(20,20,20,.6)'};
+
+function load(){
+  try{sala=JSON.parse(localStorage.getItem(SK));}catch(e){sala=null;}
+  if(!sala) sala=DEFAULTS[salaId]||{name:'Nodo '+salaId,subtitle:salaId.toUpperCase(),location:'Comodoro Rivadavia',lastMaint:'Sin datos',status:'on',aisles:[]};
+}
+function save(){localStorage.setItem(SK,JSON.stringify(sala));}
+
+function allEq(){const m={};sala.aisles.forEach(a=>a.racks.forEach(r=>r.equipment.forEach(e=>m[e.id]=e)));return m;}
+function countEq(){let c=0;sala.aisles.forEach(a=>a.racks.forEach(r=>c+=r.equipment.length));return c;}
+function getRack(rid){for(const a of sala.aisles)for(const r of a.racks)if(r.id===rid)return r;return null;}
+
+function renderHeader(){
+  document.getElementById('salaSubtitle').textContent=sala.subtitle||sala.name;
+  document.getElementById('salaName').textContent=sala.name;
+  document.getElementById('salaLoc').textContent=sala.location;
+  document.getElementById('salaMaint').textContent=sala.lastMaint;
+  document.getElementById('salaEqCount').textContent=countEq();
+  const sb=document.getElementById('salaStatus');
+  sb.textContent=sala.status==='warn'?'⚠ ALERTA':'● ACTIVO';
+  sb.className='sala-status '+(sala.status||'on');
+}
+
+// ===== FLOOR PLAN =====
+function renderPlan(){
+  const inner=document.getElementById('planInner');
+  inner.querySelectorAll('.aisle-zone,.fp-rack,.room-boundary,.ingreso-label,.aisle-label-fp').forEach(e=>e.remove());
+
+  const RACK_W=110,RACK_H=170,RACK_GAP=12,AISLE_PAD=14,AISLE_HEADER=28;
+  const START_X=40,START_Y=50,AISLE_SPACING=20;
+
+  // Calculate aisle widths
+  sala.aisles.forEach((aisle,ai)=>{
+    const cols=2, rows=Math.ceil(aisle.racks.length/cols)||1;
+    const aw=AISLE_PAD*2+cols*(RACK_W+RACK_GAP)-RACK_GAP;
+    const ah=AISLE_HEADER+AISLE_PAD+rows*(RACK_H+RACK_GAP);
+
+    // Calculate x position
+    let ax=START_X;
+    for(let i=0;i<ai;i++){
+      const pa=sala.aisles[i];
+      const pc=2,pr=Math.ceil(pa.racks.length/pc)||1;
+      ax+=AISLE_PAD*2+pc*(RACK_W+RACK_GAP)-RACK_GAP+AISLE_SPACING;
     }
-  ]
-};
+    const ay=START_Y;
 
-const sala = salas[salaId] || defaultSala;
+    // Room boundary
+    if(ai===0){
+      const rb=document.createElement('div');
+      rb.className='room-boundary';
+      const totalW=sala.aisles.reduce((s,a,i)=>{
+        const c=2,r=Math.ceil(a.racks.length/c)||1;
+        return s+AISLE_PAD*2+c*(RACK_W+RACK_GAP)-RACK_GAP+(i<sala.aisles.length-1?AISLE_SPACING:0);
+      },0)+START_X*2;
+      rb.style.cssText=`left:${START_X-20}px;top:${START_Y-20}px;width:${totalW}px;height:${ah+60}px`;
+      inner.appendChild(rb);
 
-// Render header
-document.getElementById('salaName').textContent = sala.name;
-document.getElementById('salaSubtitle').textContent = sala.subtitle;
-document.getElementById('lastMaint').textContent = sala.lastMaint;
-document.querySelector('.sala-meta').querySelector('span:first-child').innerHTML = '📍 ' + sala.location;
-if(sala.status === 'warn'){
-  document.getElementById('salaStatus').textContent = '⚠ ALERTA';
-  document.getElementById('salaStatus').className = 'status-badge warn';
-}
-// Count total equipment
-let totalEqCount = 0;
-sala.racks.forEach(r => totalEqCount += r.equipment.length);
-document.getElementById('totalEq').textContent = totalEqCount;
+      const il=document.createElement('div');
+      il.className='ingreso-label';
+      il.textContent='— INGRESO —';
+      il.style.cssText=`left:${START_X+totalW/2-40}px;top:${START_Y+ah+25}px`;
+      inner.appendChild(il);
+    }
 
-// Type labels
-const typeLabel = {dwdm:'DWDM',sdh:'SDH',radio:'RADIO',router:'ROUTER',gpon:'GPON',ups:'UPS',other:'OTRO'};
+    // Aisle zone
+    const az=document.createElement('div');
+    az.className='aisle-zone';
+    az.style.cssText=`left:${ax}px;top:${ay}px;width:${aw}px;height:${ah}px`;
+    inner.appendChild(az);
 
-// Render racks
-const grid = document.getElementById('racksGrid');
-sala.racks.forEach(rack => {
-  const rDiv = document.createElement('div');
-  rDiv.className = 'rack';
-  let slotsHTML = '';
-  rack.equipment.forEach(eq => {
-    slotsHTML += `
-      <div class="eq-slot type-${eq.type}" onclick="showDetail('${eq.id}')" id="slot-${eq.id}">
-        <div class="eq-inner">
-          <span class="eq-led ${eq.led}"></span>
-          <span class="eq-label">${eq.name}</span>
-          <span class="eq-type-badge badge-${eq.type}">${typeLabel[eq.type]||'?'}</span>
-        </div>
-      </div>`;
+    const al=document.createElement('div');
+    al.className='aisle-label-fp';
+    al.textContent=aisle.name;
+    al.style.cssText=`left:${ax+8}px;top:${ay+8}px`;
+    inner.appendChild(al);
+
+    // Racks
+    aisle.racks.forEach((rack,ri)=>{
+      const col=ri%cols, row=Math.floor(ri/cols);
+      const rx=ax+AISLE_PAD+col*(RACK_W+RACK_GAP);
+      const ry=ay+AISLE_HEADER+row*(RACK_H+RACK_GAP);
+
+      const rd=document.createElement('div');
+      rd.className='fp-rack'+(selRackId===rack.id?' sel':'');
+      rd.style.cssText=`left:${rx}px;top:${ry}px;width:${RACK_W}px;height:${RACK_H}px`;
+      rd.onclick=()=>selectRack(rack.id);
+
+      const rb=document.createElement('div');
+      rb.className='fp-rack-body';
+
+      const rh=document.createElement('div');
+      rh.className='fp-rack-hdr';
+      rh.textContent=rack.name;
+      rb.appendChild(rh);
+
+      const rs=document.createElement('div');
+      rs.className='fp-rack-slots';
+      rack.equipment.forEach(eq=>{
+        const s=document.createElement('div');
+        s.className='fp-mini-slot';
+        s.style.background=SC[eq.type]||SC.other;
+        s.style.borderLeftColor=TC[eq.type]||TC.other;
+        s.title=eq.name+' ('+TL[eq.type]+')';
+        s.onclick=(e)=>{e.stopPropagation();selectEq(eq.id);};
+        rs.appendChild(s);
+      });
+      rb.appendChild(rs);
+
+      const rf=document.createElement('div');
+      rf.className='fp-rack-foot';
+      rf.textContent=rack.equipment.length+' eq · '+rack.units;
+      rb.appendChild(rf);
+
+      const hasWarn=rack.equipment.some(e=>e.led==='yellow'||e.led==='red');
+      const dot=document.createElement('div');
+      dot.className='fp-status-dot';
+      dot.style.background=hasWarn?'var(--warn)':'var(--accent2)';
+      dot.style.boxShadow='0 0 5px '+(hasWarn?'rgba(255,170,0,.7)':'rgba(0,255,204,.7)');
+      rb.appendChild(dot);
+
+      rd.appendChild(rb);
+      inner.appendChild(rd);
+    });
   });
-  // Empty slots
-  const empties = Math.max(0, 6 - rack.equipment.length);
-  for(let i=0;i<empties;i++) slotsHTML += '<div class="empty-slot"></div>';
 
-  rDiv.innerHTML = `
-    <div class="rack-header">
-      <span class="rack-name">${rack.name}</span>
-      <span class="rack-units">${rack.units}</span>
-    </div>
-    <div class="rack-body">${slotsHTML}</div>`;
-  grid.appendChild(rDiv);
-});
-
-// All equipment map
-const allEq = {};
-sala.racks.forEach(r => r.equipment.forEach(e => allEq[e.id] = e));
-
-function showDetail(id) {
-  document.querySelectorAll('.eq-slot').forEach(s => s.classList.remove('selected'));
-  const slot = document.getElementById('slot-'+id);
-  if(slot) slot.classList.add('selected');
-  const eq = allEq[id];
-  if(!eq) return;
-
-  const colMap = {dwdm:'var(--accent)',sdh:'var(--accent2)',radio:'var(--warn)',router:'#ff6677',gpon:'#bb88ff',ups:'#ffcc00',other:'var(--dim)'};
-  const specsHTML = eq.specs.map(s=>`<div class="spec-card"><div class="spec-lbl">${s[0]}</div><div class="spec-val">${s[1]} <span class="spec-unit">${s[2]}</span></div></div>`).join('');
-  const alertColor = eq.maint.alertas === 'Ninguna' ? 'ok' : 'warn';
-  const cambioColor = eq.maint.cambio === 'VENCIDO' ? 'warn' : (eq.maint.cambio === 'N/A' ? 'na' : 'ok');
-
-  document.getElementById('detailContent').innerHTML = `
-    <div class="eq-detail">
-      <div class="eq-detail-name" style="color:${colMap[eq.type]}">${eq.name}</div>
-      <div class="eq-detail-model">${eq.model}</div>
-      <div class="panel-title" style="margin-bottom:10px">// ESPECIFICACIONES</div>
-      <div class="spec-grid">${specsHTML}</div>
-      <div class="panel-title" style="margin-bottom:10px">// MANTENIMIENTO</div>
-      <div class="maint-section">
-        <div class="maint-row"><span class="maint-label">Alertas</span><span class="maint-val ${alertColor}">${eq.maint.alertas}</span></div>
-        <div class="maint-row"><span class="maint-label">Últ. limpieza</span><span class="maint-val ok">${eq.maint.limpieza}</span></div>
-        <div class="maint-row"><span class="maint-label">Cambio filtro</span><span class="maint-val ${cambioColor}">${eq.maint.cambio}</span></div>
-      </div>
-      ${eq.maint.filtros > 0 ? `
-      <div class="panel-title" style="margin-bottom:10px">// FILTROS</div>
-      <div class="filter-grid">
-        <div class="filter-box"><div class="filter-num">${eq.maint.filtros}</div><div class="filter-lbl">TOTAL</div></div>
-        <div class="filter-box"><div class="filter-num" style="color:var(--accent2)">0</div><div class="filter-lbl">CAMBIADOS</div></div>
-        <div class="filter-box"><div class="filter-num" style="color:var(--warn)">${eq.maint.filtros}</div><div class="filter-lbl">PENDIENTES</div></div>
-      </div>` : ''}
-    </div>`;
+  updateTransform();
 }
 
-// Clock
-function tick(){const n=new Date();document.getElementById('clock').textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0');}
-setInterval(tick,1000);tick();
+function updateTransform(){
+  document.getElementById('planInner').style.transform=`translate(${px}px,${py}px) scale(${scale})`;
+  document.getElementById('zoomLvl').textContent=Math.round(scale*100)+'%';
+}
+function doZoom(f){scale=Math.max(.25,Math.min(4,scale*f));updateTransform();}
+function resetView(){scale=1;px=50;py=50;updateTransform();}
+
+const canvas=document.getElementById('planCanvas');
+canvas.addEventListener('mousedown',e=>{
+  if(e.button!==0)return;
+  const t=e.target;
+  if(t===canvas||t.id==='planInner'||t.className==='floor-bg'||t.className.includes('aisle-zone')||t.className.includes('room-boundary')||t.className.includes('floor-bg')){
+    panning=true;psx=e.clientX;psy=e.clientY;ppx=px;ppy=py;
+  }
+});
+document.addEventListener('mousemove',e=>{if(!panning)return;px=ppx+(e.clientX-psx);py=ppy+(e.clientY-psy);updateTransform();});
+document.addEventListener('mouseup',()=>panning=false);
+canvas.addEventListener('wheel',e=>{e.preventDefault();const f=e.deltaY<0?1.1:.91;doZoom(f);},{passive:false});
+
+// ===== LIST =====
+function renderList(){
+  const c=document.getElementById('listCont');c.innerHTML='';
+  sala.aisles.forEach(aisle=>{
+    const as=document.createElement('div');as.className='aisle-section';
+    const ah=document.createElement('div');ah.className='aisle-hdr';
+    ah.innerHTML=`<div class="aisle-title">📍 ${aisle.name}</div><span style="font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--dim)">${aisle.racks.length} racks</span>`;
+    as.appendChild(ah);
+    const rr=document.createElement('div');rr.className='racks-row';
+    aisle.racks.forEach(rack=>{
+      const rc=document.createElement('div');rc.className='rack-card'+(selRackId===rack.id?' sel':'');
+      let sh='';
+      rack.equipment.forEach(eq=>{
+        sh+=`<div class="eq-slot t-${eq.type}${selEqId===eq.id?' sel':''}" onclick="selectEq('${eq.id}')"><div class="eq-inner"><span class="eq-led ${eq.led}"></span><span class="eq-lbl">${eq.name}</span><span class="eq-badge b-${eq.type}">${TL[eq.type]||'?'}</span></div></div>`;
+      });
+      const em=Math.max(0,4-rack.equipment.length);
+      for(let i=0;i<em;i++)sh+='<div class="empty-slot-sm"></div>';
+      rc.innerHTML=`<div class="rack-hdr"><span class="rack-name-lbl">${rack.name}</span><span class="rack-u-lbl">${rack.units}</span></div><div class="rack-body-inner">${sh}</div>`;
+      rc.onclick=()=>selectRack(rack.id);
+      rr.appendChild(rc);
+    });
+    as.appendChild(rr);c.appendChild(as);
+  });
+}
+
+// ===== EDITOR =====
+function renderEditor(){
+  document.getElementById('ed-name').value=sala.name||'';
+  document.getElementById('ed-loc').value=sala.location||'';
+  document.getElementById('ed-maint').value=sala.lastMaint||'';
+  document.getElementById('ed-status').value=sala.status||'on';
+  const tree=document.getElementById('edTree');tree.innerHTML='';
+  sala.aisles.forEach(aisle=>{
+    const ad=document.createElement('div');ad.className='tree-aisle';
+    const ah=document.createElement('div');ah.className='tree-aisle-hdr';
+    ah.innerHTML=`<span class="tree-aisle-name">📍 ${aisle.name}</span>
+      <button class="icon-btn" onclick="renameAisle('${aisle.id}')">✏️</button>
+      <button class="icon-btn" onclick="addRack('${aisle.id}')">+Rack</button>
+      <button class="icon-btn del" onclick="delAisle('${aisle.id}')">🗑</button>`;
+    ad.appendChild(ah);
+    aisle.racks.forEach(rack=>{
+      const rd=document.createElement('div');rd.className='tree-rack'+(edRackId===rack.id?' sel':'');
+      rd.innerHTML=`<span style="color:var(--dim)">▸</span><span class="tree-rack-name">${rack.name} (${rack.units})</span>
+        <button class="icon-btn" onclick="renameRack('${rack.id}')">✏️</button>
+        <button class="icon-btn del" onclick="delRack('${aisle.id}','${rack.id}')">🗑</button>`;
+      rd.onclick=()=>openRackEd(rack.id);
+      ad.appendChild(rd);
+    });
+    tree.appendChild(ad);
+  });
+  if(edRackId)renderRackEd();
+}
+
+function openRackEd(rid){edRackId=rid;renderEditor();}
+function renderRackEd(){
+  const rack=getRack(edRackId);if(!rack)return;
+  document.getElementById('edRackTitle').textContent=rack.name;
+  let h=`<div class="fg"><label>Nombre del Rack</label><input id="er-name" value="${rack.name}"/></div>
+    <div class="fg"><label>Capacidad</label><select id="er-units">
+      <option value="12U"${rack.units==='12U'?' selected':''}>12U</option>
+      <option value="24U"${rack.units==='24U'?' selected':''}>24U</option>
+      <option value="42U"${rack.units==='42U'?' selected':''}>42U</option>
+    </select></div>
+    <button class="btn primary" onclick="saveRackInfo()" style="width:100%;margin-bottom:12px">GUARDAR RACK</button>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:.56rem;color:var(--dim);letter-spacing:2px;margin-bottom:8px">// EQUIPOS (${rack.equipment.length})</div>
+    <div class="eq-ed-list">`;
+  rack.equipment.forEach(eq=>{
+    h+=`<div class="eq-ed-item"><span class="eq-led ${eq.led}" style="width:6px;height:6px;flex-shrink:0"></span>
+      <span class="eq-ed-name">${eq.name}</span><span class="eq-badge b-${eq.type}">${TL[eq.type]||'?'}</span>
+      <button class="icon-btn" onclick="editEq('${eq.id}')">✏️</button>
+      <button class="icon-btn del" onclick="delEq('${rack.id}','${eq.id}')">🗑</button></div>`;
+  });
+  h+=`</div><button class="btn-add-eq" onclick="openAddEq('${rack.id}')">+ AGREGAR EQUIPO</button>`;
+  document.getElementById('edRackBody').innerHTML=h;
+}
+
+function saveSalaInfo(){
+  sala.name=document.getElementById('ed-name').value;
+  sala.location=document.getElementById('ed-loc').value;
+  sala.lastMaint=document.getElementById('ed-maint').value;
+  sala.status=document.getElementById('ed-status').value;
+  save();renderAll();alert('✅ Guardado');
+}
+function saveRackInfo(){
+  const r=getRack(edRackId);if(!r)return;
+  r.name=document.getElementById('er-name').value;
+  r.units=document.getElementById('er-units').value;
+  save();renderAll();
+}
+function addAisle(){
+  const n=prompt('Nombre del pasillo:','Pasillo N°'+(sala.aisles.length+1));
+  if(!n)return;sala.aisles.push({id:'a'+Date.now(),name:n,racks:[]});save();renderAll();
+}
+function renameAisle(aid){
+  const a=sala.aisles.find(x=>x.id===aid);if(!a)return;
+  const n=prompt('Nuevo nombre:',a.name);if(!n)return;a.name=n;save();renderAll();
+}
+function delAisle(aid){
+  if(!confirm('¿Eliminar pasillo y todos sus racks?'))return;
+  sala.aisles=sala.aisles.filter(x=>x.id!==aid);save();renderAll();
+}
+function addRack(aid){
+  const a=sala.aisles.find(x=>x.id===aid);if(!a)return;
+  const n=prompt('Nombre del rack:','RACK-'+String(a.racks.length+1).padStart(2,'0'));
+  if(!n)return;a.racks.push({id:'r'+Date.now(),name:n,units:'42U',equipment:[]});save();renderAll();
+}
+function renameRack(rid){
+  const r=getRack(rid);if(!r)return;
+  const n=prompt('Nuevo nombre:',r.name);if(!n)return;r.name=n;save();renderAll();
+}
+function delRack(aid,rid){
+  if(!confirm('¿Eliminar rack y sus equipos?'))return;
+  const a=sala.aisles.find(x=>x.id===aid);if(!a)return;
+  a.racks=a.racks.filter(x=>x.id!==rid);save();renderAll();
+}
+
+// MODAL
+function openAddEq(rid){
+  modalRackId=rid;editEqId=null;
+  document.getElementById('modalTitle').textContent='AGREGAR EQUIPO';
+  ['m-name','m-model','m-alert','m-cambio','m-limpieza'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('m-filtros').value='0';
+  document.getElementById('m-type').value='dwdm';
+  document.getElementById('m-led').value='green';
+  document.getElementById('modalBg').classList.add('show');
+}
+function editEq(eid){
+  const eq=allEq()[eid];if(!eq)return;
+  editEqId=eid;
+  for(const a of sala.aisles)for(const r of a.racks)if(r.equipment.find(e=>e.id===eid)){modalRackId=r.id;break;}
+  document.getElementById('modalTitle').textContent='EDITAR EQUIPO';
+  document.getElementById('m-name').value=eq.name||'';
+  document.getElementById('m-model').value=eq.model||'';
+  document.getElementById('m-type').value=eq.type||'dwdm';
+  document.getElementById('m-led').value=eq.led||'green';
+  document.getElementById('m-alert').value=eq.alert||'';
+  document.getElementById('m-filtros').value=eq.filtros||0;
+  document.getElementById('m-cambio').value=eq.cambio||'N/A';
+  document.getElementById('m-limpieza').value=eq.limpieza||'';
+  document.getElementById('modalBg').classList.add('show');
+}
+function saveEq(){
+  const eq={
+    id:editEqId||'eq'+Date.now(),
+    name:document.getElementById('m-name').value||'Equipo',
+    model:document.getElementById('m-model').value||'',
+    type:document.getElementById('m-type').value,
+    led:document.getElementById('m-led').value,
+    alert:document.getElementById('m-alert').value||'Ninguna',
+    filtros:parseInt(document.getElementById('m-filtros').value)||0,
+    cambio:document.getElementById('m-cambio').value||'N/A',
+    limpieza:document.getElementById('m-limpieza').value||'N/A',
+  };
+  const rack=getRack(modalRackId);if(!rack)return;
+  if(editEqId){const i=rack.equipment.findIndex(e=>e.id===editEqId);if(i>=0)rack.equipment[i]=eq;}
+  else rack.equipment.push(eq);
+  save();closeModal();renderAll();
+}
+function delEq(rid,eid){
+  if(!confirm('¿Eliminar equipo?'))return;
+  const r=getRack(rid);if(!r)return;
+  r.equipment=r.equipment.filter(e=>e.id!==eid);save();renderAll();
+}
+function closeModal(){document.getElementById('modalBg').classList.remove('show');}
+
+// SELECT EQUIPMENT
+function selectEq(eid){
+  selEqId=eid;
+  const eq=allEq()[eid];if(!eq)return;
+  const col=TC[eq.type]||'var(--text)';
+  const ac=eq.alert==='Ninguna'?'mv-ok':'mv-warn';
+  const cc=eq.cambio==='VENCIDO'?'mv-warn':eq.cambio==='N/A'?'mv-na':'mv-ok';
+  const statTxt=eq.led==='green'?'● ACTIVO':eq.led==='blue'?'● EN LÍNEA':eq.led==='yellow'?'⚠ ALERTA':'✕ FALLA';
+  const statC=eq.led==='yellow'||eq.led==='red'?'mv-warn':'mv-ok';
+  document.getElementById('dpBody').innerHTML=`<div style="animation:fadeIn .2s ease">
+    <div class="eq-det-name" style="color:${col}">${eq.name}</div>
+    <div class="eq-det-model">${eq.model||''}</div>
+    <div class="dp-sec">// ESTADO</div>
+    <div class="maint-row"><span>Estado</span><span class="${statC}">${statTxt}</span></div>
+    <div class="maint-row"><span>Tipo</span><span class="mv-ok">${TL[eq.type]||'?'}</span></div>
+    <div class="dp-sec">// MANTENIMIENTO</div>
+    <div class="maint-row"><span>Alertas</span><span class="${ac}">${eq.alert||'Ninguna'}</span></div>
+    <div class="maint-row"><span>Últ. limpieza</span><span class="mv-ok">${eq.limpieza||'N/A'}</span></div>
+    <div class="maint-row"><span>Próx. filtro</span><span class="${cc}">${eq.cambio||'N/A'}</span></div>
+    ${eq.filtros>0?`<div class="dp-sec">// FILTROS</div>
+    <div class="filter-grid">
+      <div class="filter-box"><div class="filter-num">${eq.filtros}</div><div class="filter-lbl">TOTAL</div></div>
+      <div class="filter-box"><div class="filter-num" style="color:var(--accent2)">0</div><div class="filter-lbl">CAMB.</div></div>
+      <div class="filter-box"><div class="filter-num" style="color:var(--warn)">${eq.filtros}</div><div class="filter-lbl">PEND.</div></div>
+    </div>`:''}
+  </div>`;
+  if(curView==='list')renderList();
+  if(curView==='plan')renderPlan();
+}
+
+function selectRack(rid){selRackId=rid;if(curView==='plan')renderPlan();if(curView==='list')renderList();}
+
+// VIEW SWITCH
+function switchView(v,tab){
+  curView=v;
+  document.querySelectorAll('.view-tab').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active');
+  document.getElementById('viewPlan').style.display=v==='plan'?'flex':'none';
+  document.getElementById('viewList').style.display=v==='list'?'flex':'none';
+  document.getElementById('viewEditor').style.display=v==='editor'?'flex':'none';
+  document.getElementById('detPanel').style.display=v==='editor'?'none':'flex';
+  if(v==='list'){document.getElementById('viewList').style.flex='1';document.getElementById('viewList').style.overflowY='auto';}
+  renderAll();
+}
+
+function renderAll(){renderHeader();if(curView==='plan')renderPlan();if(curView==='list')renderList();if(curView==='editor')renderEditor();}
+
+// CLOCK
+setInterval(()=>{const n=new Date();document.getElementById('clock').textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0');},1000);
+
+load();renderAll();
 </script>
 </body>
 </html>
