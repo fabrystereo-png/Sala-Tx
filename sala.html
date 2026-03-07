@@ -227,6 +227,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
               <select id="ed-status"><option value="on">ACTIVO</option><option value="warn">ALERTA</option><option value="off">INACTIVO</option></select>
             </div>
             <button class="btn primary" onclick="saveSalaInfo()" style="width:100%;margin-top:4px">GUARDAR</button>
+            <button class="btn success" onclick="marcarRelevamiento()" style="width:100%;margin-top:6px">✅ MARCAR RELEVAMIENTO HOY</button>
           </div>
         </div>
         <div class="ed-card">
@@ -608,6 +609,27 @@ function saveSalaInfo(){
   sala.lastMaint=document.getElementById('ed-maint').value;
   sala.status=document.getElementById('ed-status').value;
   save();renderAll();alert('✅ Guardado');
+}
+
+function marcarRelevamiento(){
+  const hoy = new Date();
+  const fechaDisplay = String(hoy.getDate()).padStart(2,'0')+'/'+String(hoy.getMonth()+1).padStart(2,'0')+'/'+hoy.getFullYear();
+  const fechaISO = hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0')+'-'+String(hoy.getDate()).padStart(2,'0');
+
+  // Actualizar en sala
+  sala.lastMaint = fechaDisplay;
+  sala.status = 'on';
+  save();
+
+  // Sincronizar con el mapa (selector usa noc_nodos_rel)
+  try{
+    const rel = JSON.parse(localStorage.getItem('noc_nodos_rel')||'{}');
+    rel[salaId] = fechaISO;
+    localStorage.setItem('noc_nodos_rel', JSON.stringify(rel));
+  }catch(e){}
+
+  renderAll();
+  alert('✅ Relevamiento marcado: '+fechaDisplay+'\nEl nodo aparecerá en VERDE en el mapa.');
 }
 function saveRackInfo(){
   const r=getRack(edRackId);if(!r)return;
