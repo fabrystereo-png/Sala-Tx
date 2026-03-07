@@ -167,7 +167,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 </div>
 
 <script>
-if(!sessionStorage.getItem('noc_auth')){window.location.href='/index.html';}
+if(!sessionStorage.getItem('noc_auth')){window.location.href='/Sala-Tx/index.html';}
 document.getElementById('uName').textContent=sessionStorage.getItem('noc_user')||'---';
 
 // ===== NODOS =====
@@ -356,8 +356,8 @@ function setFilter(f){
 }
 
 function render(){renderStats();renderMarkers();renderPanel();}
-function goSala(id){window.location.href='/sala.html?id='+id;}
-function logout(){sessionStorage.clear();window.location.href='/index.html';}
+function goSala(id){window.location.href='/Sala-Tx/sala.html?id='+id;}
+function logout(){sessionStorage.clear();window.location.href='/Sala-Tx/index.html';}
 
 // Clock
 setInterval(()=>{const n=new Date();document.getElementById('clk').textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0');},1000);

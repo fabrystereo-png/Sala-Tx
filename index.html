@@ -129,7 +129,7 @@ function doLogin(){
   if(USERS[u] && USERS[u]===p){
     sessionStorage.setItem('noc_auth','1');
     sessionStorage.setItem('noc_user',u);
-    window.location.href='/selector.html';
+    window.location.href='/Sala-Tx/selector.html';
   } else {
     err.classList.add('show');
     document.getElementById('pass').value='';
