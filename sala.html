@@ -227,7 +227,11 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
               <select id="ed-status"><option value="on">ACTIVO</option><option value="warn">ALERTA</option><option value="off">INACTIVO</option></select>
             </div>
             <button class="btn primary" onclick="saveSalaInfo()" style="width:100%;margin-top:4px">GUARDAR</button>
-            <button class="btn success" onclick="marcarRelevamiento()" style="width:100%;margin-top:6px">✅ MARCAR RELEVAMIENTO HOY</button>
+            <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
+              <div style="font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--dim);letter-spacing:2px;margin-bottom:6px">// RELEVAMIENTO</div>
+              <div class="fg"><label>Fecha del relevamiento</label><input id="rel-fecha" type="date"/></div>
+              <button class="btn success" onclick="marcarRelevamiento()" style="width:100%;margin-top:4px">✅ GUARDAR RELEVAMIENTO</button>
+            </div>
           </div>
         </div>
         <div class="ed-card">
@@ -558,6 +562,11 @@ function renderEditor(){
   document.getElementById('ed-loc').value=sala.location||'';
   document.getElementById('ed-maint').value=sala.lastMaint||'';
   document.getElementById('ed-status').value=sala.status||'on';
+  // Precargar fecha de relevamiento si existe
+  try{
+    const rel=JSON.parse(localStorage.getItem('noc_nodos_rel')||'{}');
+    if(rel[salaId]) document.getElementById('rel-fecha').value=rel[salaId];
+  }catch(e){}
   const tree=document.getElementById('edTree');tree.innerHTML='';
   sala.aisles.forEach(aisle=>{
     const ad=document.createElement('div');ad.className='tree-aisle';
@@ -612,16 +621,18 @@ function saveSalaInfo(){
 }
 
 function marcarRelevamiento(){
-  const hoy = new Date();
-  const fechaDisplay = String(hoy.getDate()).padStart(2,'0')+'/'+String(hoy.getMonth()+1).padStart(2,'0')+'/'+hoy.getFullYear();
-  const fechaISO = hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0')+'-'+String(hoy.getDate()).padStart(2,'0');
+  const input = document.getElementById('rel-fecha');
+  if(!input.value){ alert('⚠ Seleccioná una fecha primero'); return; }
+  const fechaISO = input.value; // yyyy-mm-dd
+  const p = fechaISO.split('-');
+  const fechaDisplay = p[2]+'/'+p[1]+'/'+p[0];
 
   // Actualizar en sala
   sala.lastMaint = fechaDisplay;
   sala.status = 'on';
   save();
 
-  // Sincronizar con el mapa (selector usa noc_nodos_rel)
+  // Sincronizar con el mapa
   try{
     const rel = JSON.parse(localStorage.getItem('noc_nodos_rel')||'{}');
     rel[salaId] = fechaISO;
@@ -629,7 +640,11 @@ function marcarRelevamiento(){
   }catch(e){}
 
   renderAll();
-  alert('✅ Relevamiento marcado: '+fechaDisplay+'\nEl nodo aparecerá en VERDE en el mapa.');
+
+  // Calcular estado para mostrar mensaje
+  const meses = (new Date() - new Date(fechaISO)) / (1000*60*60*24*30.44);
+  const estado = meses < 6 ? '🟢 AL DÍA' : meses < 12 ? '🟡 POR VENCER' : '🔴 VENCIDO';
+  alert('✅ Relevamiento guardado: '+fechaDisplay+'\nEstado en mapa: '+estado);
 }
 function saveRackInfo(){
   const r=getRack(edRackId);if(!r)return;
