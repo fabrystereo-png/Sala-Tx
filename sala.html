@@ -272,6 +272,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
     <div class="fg"><label>Cantidad de filtros</label><input id="m-filtros" type="number" value="0" min="0"/></div>
     <div class="fg"><label>Próximo cambio de filtro</label><input id="m-cambio" type="text" placeholder="N/A o Ene 2026"/></div>
     <div class="fg"><label>Última limpieza</label><input id="m-limpieza" type="text" placeholder="Dic 2025"/></div>
+    <div class="fg"><label>Observaciones</label><input id="m-obs" type="text" placeholder="Cualquier nota relevante"/></div>
     <div class="modal-actions">
       <button class="btn" onclick="closeModal()">CANCELAR</button>
       <button class="btn success" onclick="saveEq()">GUARDAR</button>
@@ -283,38 +284,94 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 if(!sessionStorage.getItem('noc_auth')){window.location.href='/Sala-Tx/index.html';}
 
 const params=new URLSearchParams(window.location.search);
-const salaId=params.get('id')||'tx01centro4';
+const salaId=params.get('id')||'tx01centro';
 const SK='noc_sala_'+salaId;
 
 // Default data
 const DEFAULTS={
-  tx01centro4:{name:"Sala Tx01 — Centro 4° Piso",subtitle:"SALA TX01 · CENTRO · 4TO PISO",location:"Comodoro Rivadavia — Centro",lastMaint:"15/01/2026",status:"on",
+  tx01centro:{name:"Sala Tx01 — Centro 4° Piso",subtitle:"SALA TX01 · CENTRO · 4TO PISO",location:"Comodoro Rivadavia — Rawson y Urquiza",lastMaint:"Sin datos",status:"on",
     aisles:[
-      {id:"a1",name:"Pasillo N°01",racks:[
-        {id:"r1",name:"RACK-01",units:"42U",equipment:[
-          {id:"e1",name:"CIENA 6500",model:"Ciena 6500-T12",type:"dwdm",led:"green",alert:"Ninguna",filtros:2,cambio:"Feb 2026",limpieza:"Ene 2026"},
-          {id:"e2",name:"HUAWEI OSN9800",model:"Huawei OSN 9800",type:"dwdm",led:"green",alert:"Ninguna",filtros:4,cambio:"Mar 2026",limpieza:"Ene 2026"},
-          {id:"e3",name:"HIT 7200",model:"Sycamore HiT 7200",type:"dwdm",led:"blue",alert:"Ninguna",filtros:2,cambio:"Abr 2026",limpieza:"Feb 2026"},
-          {id:"e4",name:"HIT 7025",model:"Sycamore HiT 7025",type:"sdh",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Dic 2025"},
-          {id:"e5",name:"CISCO 2900",model:"Cisco 2921 ISR",type:"router",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Dic 2025"},
+      {id:"a1",name:"Pasillo DWDM",racks:[
+        {id:"r1",name:"CRV-9800-01-R",units:"42U",equipment:[
+          {id:"e1",name:"DWDM HUAWEI",model:"Huawei OSN 9800",type:"dwdm",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"N/A",obs:"CRV-9800-01-R"},
         ]},
-        {id:"r2",name:"RACK-02",units:"42U",equipment:[
-          {id:"e6",name:"NEC PASOLINK",model:"NEC iPASOLINK EX",type:"radio",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Nov 2025"},
-          {id:"e7",name:"SIAE ALC+",model:"SIAE ALC Plus2",type:"radio",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Nov 2025"},
-          {id:"e8",name:"ZTE ZXMW",model:"ZTE ZXMW NR8250",type:"radio",led:"yellow",alert:"⚠ BER elevado — revisar",filtros:0,cambio:"N/A",limpieza:"Oct 2025"},
-          {id:"e9",name:"HUAWEI S3352",model:"Huawei S3352P-EI",type:"router",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Dic 2025"},
-          {id:"e10",name:"APC UPS",model:"APC Smart-UPS 3000",type:"ups",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Ene 2026"},
+        {id:"r2",name:"CRV-G42 SHELF01",units:"42U",equipment:[
+          {id:"e2",name:"DWDM INFINERA",model:"Infinera G42",type:"dwdm",led:"green",alert:"Ninguna",filtros:1,cambio:"Pendiente",limpieza:"Pendiente",obs:"CRV-G42 SHELF01"},
+        ]},
+        {id:"r3",name:"CRV-G42 SHELF02",units:"42U",equipment:[
+          {id:"e3",name:"DWDM INFINERA",model:"Infinera G42",type:"dwdm",led:"green",alert:"Ninguna",filtros:1,cambio:"Pendiente",limpieza:"Pendiente",obs:"CRV-G42 SHELF02"},
+        ]},
+        {id:"r4",name:"CRV-6500-01-R",units:"42U",equipment:[
+          {id:"e4",name:"DWDM CIENA",model:"Ciena 6500 Shelf01",type:"dwdm",led:"green",alert:"Ninguna",filtros:1,cambio:"Pendiente",limpieza:"Pendiente",obs:"CRV-6500-01-R Shelf01"},
+          {id:"e5",name:"DWDM CIENA",model:"Ciena 6500 Shelf02",type:"dwdm",led:"green",alert:"Ninguna",filtros:1,cambio:"Pendiente",limpieza:"Pendiente",obs:"CRV-6500-01-R Shelf02"},
+          {id:"e6",name:"DWDM CIENA",model:"Ciena 6500 Shelf03",type:"dwdm",led:"green",alert:"Ninguna",filtros:1,cambio:"Pendiente",limpieza:"Pendiente",obs:"CRV-6500-01-R Shelf03"},
+        ]},
+        {id:"r5",name:"DCRV03 / TCRV01",units:"42U",equipment:[
+          {id:"e7",name:"DWDM CORIANT",model:"Coriant HiT 7300 Shelf01",type:"dwdm",led:"green",alert:"Ninguna",filtros:1,cambio:"Pendiente",limpieza:"Pendiente",obs:"DCRV03 HiT 7300 Shelf01"},
+          {id:"e8",name:"DWDM CORIANT",model:"Coriant HiT 7300 Shelf02",type:"dwdm",led:"green",alert:"Ninguna",filtros:1,cambio:"Pendiente",limpieza:"Pendiente",obs:"DCRV03 HiT 7300 Shelf02"},
+          {id:"e9",name:"DWDM CORIANT",model:"Coriant Mtera",type:"dwdm",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"N/A",obs:"TCRV01 Mtera"},
         ]},
       ]},
-      {id:"a2",name:"Pasillo N°02",racks:[
-        {id:"r3",name:"RACK-03",units:"24U",equipment:[
-          {id:"e11",name:"FUSION SW",model:"Fusion Splicing Sys",type:"other",led:"green",alert:"Ninguna",filtros:6,cambio:"Mar 2026",limpieza:"Ene 2026"},
-          {id:"e12",name:"CIENA 3930",model:"Ciena 3930 Service",type:"dwdm",led:"blue",alert:"Ninguna",filtros:1,cambio:"Abr 2026",limpieza:"Feb 2026"},
+      {id:"a2",name:"Pasillo SDH / HiT",racks:[
+        {id:"r6",name:"CRV46 / CRV47",units:"42U",equipment:[
+          {id:"e10",name:"HIT 70XX",model:"HiT 7080",type:"sdh",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Pendiente",obs:"CRV46 HiT 7080"},
+          {id:"e11",name:"HIT 70XX",model:"HiT 7080",type:"sdh",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Pendiente",obs:"CRV47 HiT 7080"},
+        ]},
+        {id:"r7",name:"CRV30 / CRV36 / CRV32 / CRV38",units:"42U",equipment:[
+          {id:"e12",name:"HIT 70XX",model:"HiT 7050",type:"sdh",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Pendiente",obs:"CRV30 HiT 7050"},
+          {id:"e13",name:"HIT 70XX",model:"HiT 7050",type:"sdh",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Pendiente",obs:"CRV36 HiT 7050"},
+          {id:"e14",name:"HIT 70XX",model:"HiT 7050",type:"sdh",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Pendiente",obs:"CRV32 HiT 7050"},
+          {id:"e15",name:"HIT 70XX",model:"HiT 7050",type:"sdh",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Pendiente",obs:"CRV38 HiT 7050"},
+        ]},
+        {id:"r8",name:"CRV34 / CRV31 / CRV37 / CRV27",units:"42U",equipment:[
+          {id:"e16",name:"HIT 70XX",model:"HiT 7070",type:"sdh",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Pendiente",obs:"CRV34 HiT 7070"},
+          {id:"e17",name:"HIT 70XX",model:"HiT 7070",type:"sdh",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Pendiente",obs:"CRV31 HiT 7070"},
+          {id:"e18",name:"HIT 70XX",model:"HiT 7070",type:"sdh",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Pendiente",obs:"CRV37 HiT 7070"},
+          {id:"e19",name:"HIT 70XX",model:"HiT 7070 Shelf1",type:"sdh",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Pendiente",obs:"CRV27 HiT 7070 SHELF1"},
+          {id:"e20",name:"HIT 70XX",model:"HiT 7070 Shelf2",type:"sdh",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Pendiente",obs:"CRV27 HiT 7070 SHELF2"},
+        ]},
+        {id:"r9",name:"CRV41 / CRV44",units:"42U",equipment:[
+          {id:"e21",name:"HIT 70XX",model:"HiT 7080",type:"sdh",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Pendiente",obs:"CRV41 HiT 7080"},
+          {id:"e22",name:"HIT 70XX",model:"HiT 7080",type:"sdh",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Pendiente",obs:"CRV44 HiT 7080"},
+        ]},
+        {id:"r10",name:"CRV43 / CRV42 / CRV45",units:"42U",equipment:[
+          {id:"e23",name:"HIT 70XX",model:"HiT 7025",type:"sdh",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Pendiente",obs:"CRV43 HiT 7025"},
+          {id:"e24",name:"HIT 70XX",model:"HiT 7025",type:"sdh",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Pendiente",obs:"CRV42 HiT 7025"},
+          {id:"e25",name:"HIT 70XX",model:"HiT 7025",type:"sdh",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"Pendiente",obs:"CRV45 HiT 7025"},
+        ]},
+      ]},
+      {id:"a3",name:"Pasillo ADSL / GPON",racks:[
+        {id:"r11",name:"CH-CRV-03/05/06",units:"42U",equipment:[
+          {id:"e26",name:"ADSL ALCATEL",model:"Alcatel-Lucent",type:"gpon",led:"green",alert:"Ninguna",filtros:1,cambio:"Pendiente",limpieza:"Pendiente",obs:"CH-CRV-03"},
+          {id:"e27",name:"ADSL ALCATEL",model:"Alcatel-Lucent",type:"gpon",led:"green",alert:"Ninguna",filtros:1,cambio:"Pendiente",limpieza:"Pendiente",obs:"CH-CRV-05"},
+          {id:"e28",name:"ADSL ALCATEL",model:"Alcatel-Lucent",type:"gpon",led:"green",alert:"Ninguna",filtros:1,cambio:"Pendiente",limpieza:"Pendiente",obs:"CH-CRV-06"},
+        ]},
+        {id:"r12",name:"CH-CRV-07/08/10/11",units:"42U",equipment:[
+          {id:"e29",name:"ADSL ALCATEL",model:"Alcatel-Lucent",type:"gpon",led:"green",alert:"Ninguna",filtros:1,cambio:"Pendiente",limpieza:"Pendiente",obs:"CH-CRV-07"},
+          {id:"e30",name:"ADSL ALCATEL",model:"Alcatel-Lucent",type:"gpon",led:"green",alert:"Ninguna",filtros:1,cambio:"Pendiente",limpieza:"Pendiente",obs:"CH-CRV-08"},
+          {id:"e31",name:"ADSL ALCATEL",model:"Alcatel-Lucent",type:"gpon",led:"green",alert:"Ninguna",filtros:1,cambio:"Pendiente",limpieza:"Pendiente",obs:"CH-CRV-10"},
+          {id:"e32",name:"ADSL ALCATEL",model:"Alcatel-Lucent",type:"gpon",led:"green",alert:"Ninguna",filtros:1,cambio:"Pendiente",limpieza:"Pendiente",obs:"CH-CRV-11"},
+        ]},
+      ]},
+      {id:"a4",name:"Pasillo Radios / Routers",racks:[
+        {id:"r13",name:"RADIOS SIAE",units:"24U",equipment:[
+          {id:"e33",name:"RADIO SIAE",model:"SIAE AGS-20",type:"radio",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"N/A",obs:"Comodoro-Menucos"},
+          {id:"e34",name:"RADIO SIAE",model:"SIAE AGS-20",type:"radio",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"N/A",obs:"EDVSA"},
+        ]},
+        {id:"r14",name:"ROUTERS / SWITCHES",units:"42U",equipment:[
+          {id:"e35",name:"DRACO RTU",model:"Draco-RTU INELCOM",type:"other",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"N/A",obs:""},
+          {id:"e36",name:"EER HUAWEI",model:"Huawei S2300",type:"router",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"N/A",obs:"EER Huawei_S2300 (1)"},
+          {id:"e37",name:"EER HUAWEI",model:"Huawei S2300",type:"router",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"N/A",obs:"EER Huawei_S2300 (2)"},
+          {id:"e38",name:"EER CISCO",model:"Cisco 7200",type:"router",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"N/A",obs:"EECRV01"},
+          {id:"e39",name:"CATALYST 2900",model:"Cisco Catalyst 2924",type:"router",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"N/A",obs:"2924-CRV"},
+          {id:"e40",name:"CISCO 2600",model:"Cisco 2600",type:"router",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"N/A",obs:"RACRV01"},
+          {id:"e41",name:"CISCO 2800",model:"Cisco 2800",type:"router",led:"green",alert:"Ninguna",filtros:0,cambio:"N/A",limpieza:"N/A",obs:"TSCRV01"},
         ]},
       ]},
     ]
   },
-  vpuey:{name:"Sala Tx01 — Villa Pueyrredón",subtitle:"SALA TX01 · VILLA PUEYRREDÓN",location:"Comodoro Rivadavia — V. Pueyrredón",lastMaint:"10/01/2026",status:"on",aisles:[]},
+  tx01centro4:{name:"Sala Tx01 — Centro 4° Piso",subtitle:"SALA TX01 · CENTRO · 4TO PISO",location:"Comodoro Rivadavia — Rawson y Urquiza",lastMaint:"Sin datos",status:"on",aisles:[]},
+  vpuey:{name:"Sala Tx01 — Villa Pueyrredón",subtitle:"SALA TX01 · VILLA PUEYRREDÓN",location:"Comodoro Rivadavia — V. Pueyrredón",lastMaint:"Sin datos",status:"on",aisles:[]},
 };
 
 let sala=null, curView='plan', selEqId=null, selRackId=null, edRackId=null, editEqId=null, modalRackId=null;
@@ -589,7 +646,7 @@ function delRack(aid,rid){
 function openAddEq(rid){
   modalRackId=rid;editEqId=null;
   document.getElementById('modalTitle').textContent='AGREGAR EQUIPO';
-  ['m-name','m-model','m-alert','m-cambio','m-limpieza'].forEach(id=>document.getElementById(id).value='');
+  ['m-name','m-model','m-alert','m-cambio','m-limpieza','m-obs'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('m-filtros').value='0';
   document.getElementById('m-type').value='dwdm';
   document.getElementById('m-led').value='green';
@@ -608,6 +665,7 @@ function editEq(eid){
   document.getElementById('m-filtros').value=eq.filtros||0;
   document.getElementById('m-cambio').value=eq.cambio||'N/A';
   document.getElementById('m-limpieza').value=eq.limpieza||'';
+  document.getElementById('m-obs').value=eq.obs||'';
   document.getElementById('modalBg').classList.add('show');
 }
 function saveEq(){
@@ -621,6 +679,7 @@ function saveEq(){
     filtros:parseInt(document.getElementById('m-filtros').value)||0,
     cambio:document.getElementById('m-cambio').value||'N/A',
     limpieza:document.getElementById('m-limpieza').value||'N/A',
+    obs:document.getElementById('m-obs').value||'',
   };
   const rack=getRack(modalRackId);if(!rack)return;
   if(editEqId){const i=rack.equipment.findIndex(e=>e.id===editEqId);if(i>=0)rack.equipment[i]=eq;}
@@ -653,6 +712,7 @@ function selectEq(eid){
     <div class="maint-row"><span>Alertas</span><span class="${ac}">${eq.alert||'Ninguna'}</span></div>
     <div class="maint-row"><span>Últ. limpieza</span><span class="mv-ok">${eq.limpieza||'N/A'}</span></div>
     <div class="maint-row"><span>Próx. filtro</span><span class="${cc}">${eq.cambio||'N/A'}</span></div>
+    ${eq.obs?`<div class="dp-sec">// OBSERVACIONES</div><div style="font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--text);padding:4px 0;line-height:1.6">${eq.obs}</div>`:''}
     ${eq.filtros>0?`<div class="dp-sec">// FILTROS</div>
     <div class="filter-grid">
       <div class="filter-box"><div class="filter-num">${eq.filtros}</div><div class="filter-lbl">TOTAL</div></div>
