@@ -111,6 +111,29 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* ADD NODE MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;display:flex;align-items:center;justify-content:center}
+.modal-overlay.hidden{display:none}
+.modal-box{background:var(--panel);border:1px solid var(--accent);border-radius:6px;width:400px;max-width:95vw;box-shadow:0 0 30px rgba(0,170,255,.2)}
+.modal-title{padding:12px 16px;border-bottom:1px solid var(--border);font-family:'Orbitron',sans-serif;font-size:.7rem;color:var(--accent);letter-spacing:2px;display:flex;justify-content:space-between;align-items:center}
+.modal-close{background:none;border:none;color:var(--dim);cursor:pointer;font-size:1.1rem;line-height:1}
+.modal-close:hover{color:var(--danger)}
+.modal-body{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.mfg{display:flex;flex-direction:column;gap:3px}
+.mfg label{font-family:'Share Tech Mono',monospace;font-size:.56rem;color:var(--dim);letter-spacing:1px}
+.mfg input,.mfg select{background:rgba(0,170,255,.04);border:1px solid var(--border);color:var(--text);padding:6px 10px;font-family:'Share Tech Mono',monospace;font-size:.68rem;border-radius:3px;outline:none;transition:border-color .2s;width:100%}
+.mfg input:focus,.mfg select:focus{border-color:var(--accent)}
+.mfg select option{background:var(--panel)}
+.mfg-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.modal-foot{padding:10px 16px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+.btn-add{padding:6px 18px;background:rgba(0,170,255,.15);border:1px solid var(--accent);color:var(--accent);font-family:'Share Tech Mono',monospace;font-size:.65rem;cursor:pointer;border-radius:3px;transition:all .2s}
+.btn-add:hover{background:rgba(0,170,255,.3)}
+.btn-cancel{padding:6px 14px;background:transparent;border:1px solid var(--border);color:var(--dim);font-family:'Share Tech Mono',monospace;font-size:.65rem;cursor:pointer;border-radius:3px;transition:all .2s}
+.btn-cancel:hover{border-color:var(--danger);color:var(--danger)}
+.btn-add-nodo{padding:4px 12px;background:rgba(0,255,204,.1);border:1px solid var(--accent2);color:var(--accent2);font-family:'Share Tech Mono',monospace;font-size:.6rem;cursor:pointer;border-radius:3px;transition:all .2s;letter-spacing:.5px}
+.btn-add-nodo:hover{background:rgba(0,255,204,.2)}
+.coord-hint{font-family:'Share Tech Mono',monospace;font-size:.55rem;color:var(--dim);margin-top:2px}
 </style>
 </head>
 <body>
@@ -156,6 +179,64 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
   <button class="fb" id="fb-crv" onclick="setFilter('crv')">COMODORO</button>
   <button class="fb" id="fb-prov" onclick="setFilter('prov')">PROVINCIA</button>
   <input class="srch" id="srch" placeholder="Buscar nodo..." oninput="render()"/>
+  <button class="btn-add-nodo" id="btn-add-nodo" style="display:none" onclick="openAddModal()">+ AGREGAR NODO</button>
+</div>
+
+<!-- MODAL AGREGAR NODO -->
+<div class="modal-overlay hidden" id="addModal">
+  <div class="modal-box">
+    <div class="modal-title">
+      <span>// AGREGAR NUEVO NODO</span>
+      <button class="modal-close" onclick="closeAddModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="mfg">
+        <label>NOMBRE DEL NODO</label>
+        <input id="an-name" type="text" placeholder="Ej: Sala Tx01 — Caleta Córdova"/>
+      </div>
+      <div class="mfg">
+        <label>DESCRIPCIÓN / SUBTÍTULO</label>
+        <input id="an-sub" type="text" placeholder="Ej: CENTRAL · ZONA NORTE"/>
+      </div>
+      <div class="mfg-row">
+        <div class="mfg">
+          <label>TIPO</label>
+          <select id="an-tipo">
+            <option value="central">Central</option>
+            <option value="shelter">Shelter</option>
+            <option value="repetidora">Repetidora</option>
+          </select>
+        </div>
+        <div class="mfg">
+          <label>ZONA</label>
+          <select id="an-zona">
+            <option value="crv">Comodoro Rivadavia</option>
+            <option value="prov">Provincia</option>
+          </select>
+        </div>
+      </div>
+      <div class="mfg-row">
+        <div class="mfg">
+          <label>LATITUD</label>
+          <input id="an-lat" type="text" placeholder="-45.8645538"/>
+          <div class="coord-hint">Negativo para sur</div>
+        </div>
+        <div class="mfg">
+          <label>LONGITUD</label>
+          <input id="an-lng" type="text" placeholder="-67.4921585"/>
+          <div class="coord-hint">Negativo para oeste</div>
+        </div>
+      </div>
+      <div class="mfg">
+        <label>ÚLTIMO RELEVAMIENTO (opcional)</label>
+        <input id="an-rel" type="date"/>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeAddModal()">CANCELAR</button>
+      <button class="btn-add" onclick="saveNewNodo()">✓ AGREGAR AL MAPA</button>
+    </div>
+  </div>
 </div>
 
 <div class="main">
@@ -168,7 +249,10 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 
 <script>
 if(!sessionStorage.getItem('noc_auth')){window.location.href='/Sala-Tx/index.html';}
-document.getElementById('uName').textContent=sessionStorage.getItem('noc_user')||'---';
+const currentUser = sessionStorage.getItem('noc_user')||'';
+document.getElementById('uName').textContent = currentUser;
+// Mostrar botón solo para admin
+if(currentUser === 'admin') document.getElementById('btn-add-nodo').style.display='inline-block';
 
 // ===== NODOS =====
 const NODOS = [
@@ -209,13 +293,19 @@ const NODOS = [
 ];
 
 const SK='noc_nodos_rel';
+const SK_EXTRA='noc_nodos_extra';
 let nodos=[...NODOS];
 let markers={};
 let curFilter='all';
 let map;
 
-// Load saved relevamiento dates
+// Load saved relevamiento dates + custom nodos
 function loadRel(){
+  try{
+    // Cargar nodos extra guardados por el admin
+    const extra=JSON.parse(localStorage.getItem(SK_EXTRA)||'[]');
+    nodos=[...NODOS,...extra];
+  }catch(e){ nodos=[...NODOS]; }
   try{
     const saved=JSON.parse(localStorage.getItem(SK)||'{}');
     nodos.forEach(n=>{ if(saved[n.id]) n.rel=saved[n.id]; });
@@ -353,6 +443,66 @@ function setFilter(f){
     el.className='fb'+(id===f?' '+cls[f]:'');
   });
   render();
+}
+
+function openAddModal(){
+  // Limpiar campos
+  ['an-name','an-sub','an-lat','an-lng','an-rel'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('an-tipo').value='central';
+  document.getElementById('an-zona').value='crv';
+  document.getElementById('addModal').classList.remove('hidden');
+}
+function closeAddModal(){
+  document.getElementById('addModal').classList.add('hidden');
+}
+function saveNewNodo(){
+  const name = document.getElementById('an-name').value.trim();
+  const sub  = document.getElementById('an-sub').value.trim();
+  const tipo = document.getElementById('an-tipo').value;
+  const zona = document.getElementById('an-zona').value;
+  const latS = document.getElementById('an-lat').value.trim();
+  const lngS = document.getElementById('an-lng').value.trim();
+  const rel  = document.getElementById('an-rel').value||null;
+
+  if(!name){ alert('⚠ Ingresá el nombre del nodo'); return; }
+  if(!latS || !lngS){ alert('⚠ Las coordenadas son obligatorias'); return; }
+  const lat = parseFloat(latS);
+  const lng = parseFloat(lngS);
+  if(isNaN(lat)||isNaN(lng)){ alert('⚠ Las coordenadas deben ser números decimales\nEj: -45.8645538'); return; }
+  if(lat<-90||lat>90||lng<-180||lng>180){ alert('⚠ Coordenadas fuera de rango\nLatitud: -90 a 90\nLongitud: -180 a 180'); return; }
+
+  // Generar ID único
+  const id = 'custom_' + Date.now();
+
+  const newNodo = { id, name, sub: sub||tipo.toUpperCase(), lat, lng, tipo, zona, rel };
+
+  // Guardar en localStorage
+  try{
+    const extra = JSON.parse(localStorage.getItem(SK_EXTRA)||'[]');
+    extra.push(newNodo);
+    localStorage.setItem(SK_EXTRA, JSON.stringify(extra));
+  }catch(e){}
+
+  // Si tiene relevamiento, guardarlo también
+  if(rel){
+    try{
+      const saved=JSON.parse(localStorage.getItem(SK)||'{}');
+      saved[id]=rel;
+      localStorage.setItem(SK,JSON.stringify(saved));
+    }catch(e){}
+  }
+
+  // Recargar y cerrar
+  loadRel();
+  render();
+  closeAddModal();
+
+  // Centrar el mapa en el nuevo nodo
+  setTimeout(()=>{
+    map.setView([lat,lng],12,{animate:true});
+    if(markers[id]) setTimeout(()=>markers[id].openPopup(),600);
+  },200);
+  alert('✅ Nodo agregado: '+name);
 }
 
 function render(){renderStats();renderMarkers();renderPanel();}
