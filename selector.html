@@ -184,7 +184,6 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
   <button class="btn-add-nodo" id="btn-add-nodo" style="display:none" onclick="openAddModal()">+ AGREGAR NODO</button>
 </div>
 
-<!-- MODAL AGREGAR NODO -->
 <div class="modal-overlay hidden" id="addModal">
   <div class="modal-box">
     <div class="modal-title">
@@ -249,7 +248,24 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
   </div>
 </div>
 
-<script>
+<script type="module">
+// --- CONFIGURACIÓN FIREBASE ---
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBR3LcAtfwfccaPJrGDny4nhi1n-XUdYrc",
+  authDomain: "noc-patagonia.firebaseapp.com",
+  projectId: "noc-patagonia",
+  storageBucket: "noc-patagonia.firebasestorage.app",
+  messagingSenderId: "24526360193",
+  appId: "1:24526360193:web:bb6a64d58e63b09c5a8780",
+  measurementId: "G-W28Y2XCLGX"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 if(!sessionStorage.getItem('noc_auth')){window.location.href='/Sala-Tx/index.html';}
 const currentUser = sessionStorage.getItem('noc_user')||'';
 document.getElementById('uName').textContent = currentUser;
@@ -301,25 +317,31 @@ let markers={};
 let curFilter='all';
 let map;
 
-// Load saved relevamiento dates + custom nodos
+// FUNCIÓN PARA SUBIR TODO A LA NUBE
+window.saveAllToCloud = async function() {
+  const data = {};
+  nodos.forEach(n => {
+    data[n.id] = { rel: n.rel, lat: n.lat, lng: n.lng };
+  });
+  try {
+    await setDoc(doc(db, "nodos", "estado_general"), data);
+    console.log("Nube actualizada");
+  } catch(e) { console.error("Error subiendo a Firebase:", e); }
+};
+
+// Sincronización con Firebase (REEMPLAZA loadRel y saveRel viejos)
 function loadRel(){
-  try{
-    // Cargar nodos extra guardados por el admin
-    const extra=JSON.parse(localStorage.getItem(SK_EXTRA)||'[]');
-    nodos=[...NODOS,...extra];
-  }catch(e){ nodos=[...NODOS]; }
-  try{
-    const saved=JSON.parse(localStorage.getItem(SK)||'{}');
-    nodos.forEach(n=>{ if(saved[n.id]) n.rel=saved[n.id]; });
-  }catch(e){}
+  // La carga ahora la gestiona onSnapshot automáticamente
 }
-function saveRel(id,date){
-  try{
-    const saved=JSON.parse(localStorage.getItem(SK)||'{}');
-    saved[id]=date;
-    localStorage.setItem(SK,JSON.stringify(saved));
-    nodos.find(n=>n.id===id).rel=date;
-  }catch(e){}
+
+function saveRel(id, date){
+  try {
+    const nodo = nodos.find(n => n.id === id);
+    if(nodo) {
+      nodo.rel = date;
+      if(typeof saveAllToCloud === "function") saveAllToCloud();
+    }
+  } catch(e) { console.error("Error al guardar:", e); }
 }
 
 function status(rel){
@@ -478,23 +500,8 @@ function saveNewNodo(){
 
   const newNodo = { id, name, sub: sub||tipo.toUpperCase(), lat, lng, tipo, zona, rel };
 
-  // Guardar en localStorage
-  try{
-    const extra = JSON.parse(localStorage.getItem(SK_EXTRA)||'[]');
-    extra.push(newNodo);
-    localStorage.setItem(SK_EXTRA, JSON.stringify(extra));
-  }catch(e){}
-
-  // Si tiene relevamiento, guardarlo también
-  if(rel){
-    try{
-      const saved=JSON.parse(localStorage.getItem(SK)||'{}');
-      saved[id]=rel;
-      localStorage.setItem(SK,JSON.stringify(saved));
-    }catch(e){}
-  }
-
-  // Recargar y cerrar
+  nodos.push(newNodo);
+  saveAllToCloud();
   loadRel();
   render();
   closeAddModal();
@@ -518,6 +525,21 @@ setInterval(()=>{const n=new Date();document.getElementById('clk').textContent=S
 const st=document.createElement('style');
 st.textContent='@keyframes mpls{0%{transform:scale(1);opacity:.6}100%{transform:scale(2.2);opacity:0}}';
 document.head.appendChild(st);
+
+// ESCUCHA EN TIEMPO REAL
+onSnapshot(doc(db, "nodos", "estado_general"), (docSnap) => {
+  if (docSnap.exists()) {
+    const cloudData = docSnap.data();
+    nodos.forEach(n => {
+      if(cloudData[n.id]) {
+        n.rel = cloudData[n.id].rel || n.rel;
+        n.lat = cloudData[n.id].lat || n.lat;
+        n.lng = cloudData[n.id].lng || n.lng;
+      }
+    });
+    render(); 
+  }
+});
 
 // INIT
 loadRel();
