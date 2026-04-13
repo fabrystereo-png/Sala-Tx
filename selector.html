@@ -269,115 +269,142 @@ const db = getFirestore(app);
 if(!sessionStorage.getItem('noc_auth')){window.location.href='/Sala-Tx/index.html';}
 const currentUser = sessionStorage.getItem('noc_user')||'';
 document.getElementById('uName').textContent = currentUser;
-// Mostrar botón solo para admin
 if(currentUser === 'admin') document.getElementById('btn-add-nodo').style.display='inline-block';
 
 // ===== NODOS =====
 const NODOS = [
-  // COMODORO RIVADAVIA
-  {id:'tx01centro',   name:'Sala Tx01 — Centro',         sub:'4TO PISO · CENTRAL PRINCIPAL', lat:-45.8645538, lng:-67.4921585, tipo:'central',    zona:'crv', rel:null},
-  {id:'tx02centro',   name:'Sala Tx02 — Centro',         sub:'1ER PISO · CENTRAL',           lat:-45.8648000, lng:-67.4918000, tipo:'central',    zona:'crv', rel:null},
-  {id:'vpuey',        name:'Sala Tx01 — V. Pueyrredón',  sub:'CENTRAL GRANDE',               lat:-45.8820458, lng:-67.5318774, tipo:'central',    zona:'crv', rel:null},
-  {id:'radatilly',    name:'Sala Tx01 — Rada Tilly',     sub:'CENTRAL',                      lat:-45.931528,  lng:-67.556389,  tipo:'central',    zona:'crv', rel:null},
-  {id:'cerrotanque',  name:'Sala Tx01 — Cerro Tanque',   sub:'CENTRAL ALTA',                 lat:-45.827361,  lng:-67.519861,  tipo:'central',    zona:'crv', rel:null},
-  {id:'laprida',      name:'Sala Tx01 — Laprida',        sub:'CENTRAL',                      lat:-45.8290701, lng:-67.5430865, tipo:'central',    zona:'crv', rel:null},
-  {id:'palazzo',      name:'Tx01 — Palazzo',             sub:'CENTRAL',                      lat:-45.7953957, lng:-67.4783992, tipo:'central',    zona:'crv', rel:null},
-  {id:'donbosco',     name:'Shelter Tx01 — Don Bosco',   sub:'SHELTER',                      lat:-45.7945,    lng:-67.421528,  tipo:'shelter',    zona:'crv', rel:null},
-  {id:'mosconi',      name:'Sala Tx01 — Gral. Mosconi',  sub:'CENTRAL',                      lat:-45.839167,  lng:-67.479417,  tipo:'central',    zona:'crv', rel:null},
-  {id:'cerrotosca',   name:'Tx01 — Cerro Tosca',         sub:'CENTRAL',                      lat:-45.859694,  lng:-67.912861,  tipo:'central',    zona:'crv', rel:null},
-  {id:'mcdonald',     name:'Tx01 — McDonald',            sub:'CENTRAL',                      lat:-46.612361,  lng:-68.487639,  tipo:'central',    zona:'crv', rel:null},
-
-  // PROVINCIA
-  {id:'menucos',      name:'Menucos — Tx01',             sub:'CENTRAL',                      lat:-45.968139,  lng:-67.924389,  tipo:'central',    zona:'prov', rel:null},
-  {id:'caletaolivia', name:'Caleta Olivia — Shelter Tx01',sub:'SHELTER',                     lat:-46.439167,  lng:-67.5165,    tipo:'shelter',    zona:'prov', rel:null},
-  {id:'tgspicot',     name:'TGS Pico Truncado',          sub:'REPETIDORA',                   lat:-46.662722,  lng:-67.940306,  tipo:'repetidora', zona:'prov', rel:null},
-  {id:'picotruncado', name:'Pico Truncado — Tx01',       sub:'CENTRAL',                      lat:-46.799139,  lng:-67.959333,  tipo:'central',    zona:'prov', rel:null},
-  {id:'lasheras',     name:'Las Heras — Tx01',           sub:'CENTRAL',                      lat:-46.542167,  lng:-68.935056,  tipo:'central',    zona:'prov', rel:null},
-  {id:'jaramillo',    name:'Jaramillo — Tx01',           sub:'REPETIDORA',                   lat:-47.188667,  lng:-67.137833,  tipo:'repetidora', zona:'prov', rel:null},
-  {id:'puertodeseado',name:'Puerto Deseado — Tx01',      sub:'CENTRAL',                      lat:-47.750333,  lng:-65.894306,  tipo:'central',    zona:'prov', rel:null},
-  {id:'reppdeseado',  name:'Rep. Puerto Deseado',        sub:'REPETIDORA',                   lat:-47.745194,  lng:-65.897389,  tipo:'repetidora', zona:'prov', rel:null},
-  {id:'repquinta',    name:'Rep. Quinta',                sub:'REPETIDORA',                   lat:-47.516667,  lng:-67.269778,  tipo:'repetidora', zona:'prov', rel:null},
-  {id:'peritomoreno', name:'Perito Moreno — Tx01',       sub:'CENTRAL',                      lat:-46.592694,  lng:-70.927417,  tipo:'central',    zona:'prov', rel:null},
-  {id:'repperito',    name:'Rep. Perito Moreno',         sub:'REPETIDORA',                   lat:-46.589306,  lng:-70.977806,  tipo:'repetidora', zona:'prov', rel:null},
-  {id:'losantiguos',  name:'Los Antiguos — Tx01',        sub:'CENTRAL',                      lat:-46.544139,  lng:-71.6265,    tipo:'central',    zona:'prov', rel:null},
-  {id:'elgauchito',   name:'El Gauchito — Tx01',         sub:'REPETIDORA',                   lat:-45.953028,  lng:-70.406167,  tipo:'repetidora', zona:'prov', rel:null},
-  {id:'riomayo',      name:'Río Mayo — Tx01',            sub:'CENTRAL',                      lat:-45.692722,  lng:-70.246528,  tipo:'central',    zona:'prov', rel:null},
-  {id:'riosenguer',   name:'Río Senguer — Tx01',         sub:'CENTRAL',                      lat:-45.038556,  lng:-70.824472,  tipo:'central',    zona:'prov', rel:null},
-  {id:'sarmiento',    name:'Sarmiento — Tx01',           sub:'CENTRAL',                      lat:-45.587083,  lng:-69.071333,  tipo:'central',    zona:'prov', rel:null},
-  {id:'makiavelli',   name:'Makiavelli — Tx01',          sub:'CENTRAL',                      lat:-45.757694,  lng:-68.269389,  tipo:'central',    zona:'prov', rel:null},
-  {id:'picosalamanca',name:'Pico Salamanca — Tx01',      sub:'REPETIDORA',                   lat:-45.404333,  lng:-67.413889,  tipo:'repetidora', zona:'prov', rel:null},
-  {id:'malaspina',    name:'Malaspina — Tx01',           sub:'REPETIDORA',                   lat:-45.018972,  lng:-67.106389,  tipo:'repetidora', zona:'prov', rel:null},
-  {id:'garayalde',    name:'Garayalde — Tx01',           sub:'REPETIDORA',                   lat:-44.686278,  lng:-66.618694,  tipo:'repetidora', zona:'prov', rel:null},
+  {id:'tx01centro', name:'Sala Tx01 — Centro', sub:'4TO PISO · CENTRAL PRINCIPAL', lat:-45.8645538, lng:-67.4921585, tipo:'central', zona:'crv', rel:null},
+  {id:'tx02centro', name:'Sala Tx02 — Centro', sub:'1ER PISO · CENTRAL', lat:-45.8648000, lng:-67.4918000, tipo:'central', zona:'crv', rel:null},
+  {id:'vpuey', name:'Sala Tx01 — V. Pueyrredón', sub:'CENTRAL GRANDE', lat:-45.8820458, lng:-67.5318774, tipo:'central', zona:'crv', rel:null},
+  {id:'radatilly', name:'Sala Tx01 — Rada Tilly', sub:'CENTRAL', lat:-45.931528, lng:-67.556389, tipo:'central', zona:'crv', rel:null},
+  {id:'cerrotanque', name:'Sala Tx01 — Cerro Tanque', sub:'CENTRAL ALTA', lat:-45.827361, lng:-67.519861, tipo:'central', zona:'crv', rel:null},
+  {id:'laprida', name:'Sala Tx01 — Laprida', sub:'CENTRAL', lat:-45.8290701, lng:-67.5430865, tipo:'central', zona:'crv', rel:null},
+  {id:'palazzo', name:'Tx01 — Palazzo', sub:'CENTRAL', lat:-45.7953957, lng:-67.4783992, tipo:'central', zona:'crv', rel:null},
+  {id:'donbosco', name:'Shelter Tx01 — Don Bosco', sub:'SHELTER', lat:-45.7945, lng:-67.421528, tipo:'shelter', zona:'crv', rel:null},
+  {id:'mosconi', name:'Sala Tx01 — Gral. Mosconi', sub:'CENTRAL', lat:-45.839167, lng:-67.479417, tipo:'central', zona:'crv', rel:null},
+  {id:'cerrotosca', name:'Tx01 — Cerro Tosca', sub:'CENTRAL', lat:-45.859694, lng:-67.912861, tipo:'central', zona:'crv', rel:null},
+  {id:'mcdonald', name:'Tx01 — McDonald', sub:'CENTRAL', lat:-46.612361, lng:-68.487639, tipo:'central', zona:'crv', rel:null},
+  {id:'menucos', name:'Menucos — Tx01', sub:'CENTRAL', lat:-45.968139, lng:-67.924389, tipo:'central', zona:'prov', rel:null},
+  {id:'caletaolivia', name:'Caleta Olivia — Shelter Tx01', sub:'SHELTER', lat:-46.439167, lng:-67.5165, tipo:'shelter', zona:'prov', rel:null},
+  {id:'tgspicot', name:'TGS Pico Truncado', sub:'REPETIDORA', lat:-46.662722, lng:-67.940306, tipo:'repetidora', zona:'prov', rel:null},
+  {id:'picotruncado', name:'Pico Truncado — Tx01', sub:'CENTRAL', lat:-46.799139, lng:-67.959333, tipo:'central', zona:'prov', rel:null},
+  {id:'lasheras', name:'Las Heras — Tx01', sub:'CENTRAL', lat:-46.542167, lng:-68.935056, tipo:'central', zona:'prov', rel:null},
+  {id:'jaramillo', name:'Jaramillo — Tx01', sub:'REPETIDORA', lat:-47.188667, lng:-67.137833, tipo:'repetidora', zona:'prov', rel:null},
+  {id:'puertodeseado', name:'Puerto Deseado — Tx01', sub:'CENTRAL', lat:-47.750333, lng:-65.894306, tipo:'central', zona:'prov', rel:null},
+  {id:'reppdeseado', name:'Rep. Puerto Deseado', sub:'REPETIDORA', lat:-47.745194, lng:-65.897389, tipo:'repetidora', zona:'prov', rel:null},
+  {id:'repquinta', name:'Rep. Quinta', sub:'REPETIDORA', lat:-47.516667, lng:-67.269778, tipo:'repetidora', zona:'prov', rel:null},
+  {id:'peritomoreno', name:'Perito Moreno — Tx01', sub:'CENTRAL', lat:-46.592694, lng:-70.927417, tipo:'central', zona:'prov', rel:null},
+  {id:'repperito', name:'Rep. Perito Moreno', sub:'REPETIDORA', lat:-46.589306, lng:-70.977806, tipo:'repetidora', zona:'prov', rel:null},
+  {id:'losantiguos', name:'Los Antiguos — Tx01', sub:'CENTRAL', lat:-46.544139, lng:-71.6265, tipo:'central', zona:'prov', rel:null},
+  {id:'elgauchito', name:'El Gauchito — Tx01', sub:'REPETIDORA', lat:-45.953028, lng:-70.406167, tipo:'repetidora', zona:'prov', rel:null},
+  {id:'riomayo', name:'Río Mayo — Tx01', sub:'CENTRAL', lat:-45.692722, lng:-70.246528, tipo:'central', zona:'prov', rel:null},
+  {id:'riosenguer', name:'Río Senguer — Tx01', sub:'CENTRAL', lat:-45.038556, lng:-70.824472, tipo:'central', zona:'prov', rel:null},
+  {id:'sarmiento', name:'Sarmiento — Tx01', sub:'CENTRAL', lat:-45.587083, lng:-69.071333, tipo:'central', zona:'prov', rel:null},
+  {id:'makiavelli', name:'Makiavelli — Tx01', sub:'CENTRAL', lat:-45.757694, lng:-68.269389, tipo:'central', zona:'prov', rel:null},
+  {id:'picosalamanca', name:'Pico Salamanca — Tx01', sub:'REPETIDORA', lat:-45.404333, lng:-67.413889, tipo:'repetidora', zona:'prov', rel:null},
+  {id:'malaspina', name:'Malaspina — Tx01', sub:'REPETIDORA', lat:-45.018972, lng:-67.106389, tipo:'repetidora', zona:'prov', rel:null},
+  {id:'garayalde', name:'Garayalde — Tx01', sub:'REPETIDORA', lat:-44.686278, lng:-66.618694, tipo:'repetidora', zona:'prov', rel:null},
 ];
 
-const SK='noc_nodos_rel';
-const SK_EXTRA='noc_nodos_extra';
 let nodos=[...NODOS];
 let markers={};
 let curFilter='all';
 let map;
 
-// FUNCIÓN PARA SUBIR TODO A LA NUBE
-window.saveAllToCloud = async function() {
-  const data = {};
-  nodos.forEach(n => {
-    data[n.id] = { rel: n.rel, lat: n.lat, lng: n.lng };
+// EXPORTACIÓN GLOBAL DE FUNCIONES (Para que el HTML las vea)
+window.goSala = function(id) { window.location.href='/Sala-Tx/sala.html?id='+id; };
+window.logout = function() { sessionStorage.clear(); window.location.href='/Sala-Tx/index.html'; };
+window.setFilter = function(f){
+  curFilter=f;
+  const ids=['all','g','y','r','crv','prov'];
+  const cls={all:'on',g:'on-g',y:'on-y',r:'on-r',crv:'on',prov:'on'};
+  ids.forEach(id=>{
+    const el=document.getElementById('fb-'+id);
+    if(!el)return;
+    el.className='fb'+(id===f?' '+cls[f]:'');
   });
-  try {
-    await setDoc(doc(db, "nodos", "estado_general"), data);
-    console.log("Nube actualizada");
-  } catch(e) { console.error("Error subiendo a Firebase:", e); }
+  window.render();
+};
+window.openAddModal = function() {
+  ['an-name','an-sub','an-lat','an-lng','an-rel'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('an-tipo').value='central';
+  document.getElementById('an-zona').value='crv';
+  document.getElementById('addModal').classList.remove('hidden');
+};
+window.closeAddModal = function() { document.getElementById('addModal').classList.add('hidden'); };
+window.saveNewNodo = async function() {
+  const name = document.getElementById('an-name').value.trim();
+  const sub = document.getElementById('an-sub').value.trim();
+  const tipo = document.getElementById('an-tipo').value;
+  const zona = document.getElementById('an-zona').value;
+  const latS = document.getElementById('an-lat').value.trim();
+  const lngS = document.getElementById('an-lng').value.trim();
+  const rel = document.getElementById('an-rel').value||null;
+  if(!name || !latS || !lngS) return alert('⚠ Faltan datos');
+  const lat = parseFloat(latS), lng = parseFloat(lngS);
+  const id = 'custom_' + Date.now();
+  nodos.push({ id, name, sub: sub||tipo.toUpperCase(), lat, lng, tipo, zona, rel });
+  await window.saveAllToCloud();
+  window.closeAddModal();
 };
 
-// Sincronización con Firebase (REEMPLAZA loadRel y saveRel viejos)
-function loadRel(){
-  // La carga ahora la gestiona onSnapshot automáticamente
-}
+window.saveAllToCloud = async function() {
+  const data = {};
+  nodos.forEach(n => { data[n.id] = { rel: n.rel, lat: n.lat, lng: n.lng }; });
+  try { await setDoc(doc(db, "nodos", "estado_general"), data); } catch(e) { console.error(e); }
+};
 
-function saveRel(id, date){
-  try {
-    const nodo = nodos.find(n => n.id === id);
-    if(nodo) {
-      nodo.rel = date;
-      if(typeof saveAllToCloud === "function") saveAllToCloud();
-    }
-  } catch(e) { console.error("Error al guardar:", e); }
-}
+window.render = function(){
+  let g=0,y=0,r=0,gr=0;
+  nodos.forEach(n=>{const s=status(n.rel);if(s==='g')g++;else if(s==='y')y++;else if(s==='r')r++;else gr++;});
+  document.getElementById('sTotal').textContent=nodos.length;
+  document.getElementById('sG').textContent=g; document.getElementById('sY').textContent=y;
+  document.getElementById('sR').textContent=r; document.getElementById('sGr').textContent=gr;
+
+  Object.values(markers).forEach(m=>map.removeLayer(m));
+  markers={};
+  const filtered = getFiltered();
+  filtered.forEach(n=>{
+    const s=status(n.rel);
+    const mk=L.marker([n.lat,n.lng],{icon:makeIcon(s,n.tipo)}).addTo(map);
+    mk.bindPopup(`<div class="npop"><div class="npop-hdr ${s}"><div class="npop-name">${n.name}</div></div><div class="npop-body"><div class="npop-row"><span>Estado</span><span class="npop-val ${s}">${statusLabel(n.rel)}</span></div><div class="npop-row"><span>Últ. relevamiento</span><span class="npop-val">${fmtDate(n.rel)}</span></div></div><button class="npop-btn" onclick="goSala('${n.id}')">→ ABRIR SALA</button></div>`,{maxWidth:240});
+    mk.on('click',()=>hlPanel(n.id));
+    markers[n.id]=mk;
+  });
+
+  const list=document.getElementById('rpList'); list.innerHTML='';
+  document.getElementById('rpCnt').textContent=filtered.length+' nodos';
+  const addGroup=(title,nodes)=>{
+    if(!nodes.length)return;
+    const h=document.createElement('div'); h.className='rp-group-hdr'; h.textContent='// '+title; list.appendChild(h);
+    nodes.forEach(n=>{
+      const s=status(n.rel);
+      const el=document.createElement('div'); el.className='ni'; el.id='ni-'+n.id;
+      el.innerHTML=`<span class="ni-dot ${s}"></span><div class="ni-info"><div class="ni-name">${n.name}</div><div class="ni-sub">${n.sub}</div></div><div class="ni-date ${s}">${fmtDate(n.rel)||'S/D'}</div>`;
+      el.onclick=()=>{map.setView([n.lat,n.lng],13,{animate:true}); setTimeout(()=>markers[n.id].openPopup(),400); hlPanel(n.id);};
+      list.appendChild(el);
+    });
+  };
+  addGroup('COMODORO RIVADAVIA',filtered.filter(n=>n.zona==='crv'));
+  addGroup('PROVINCIA',filtered.filter(n=>n.zona==='prov'));
+};
 
 function status(rel){
   if(!rel) return 'gr';
   const m=(new Date()-new Date(rel))/(1000*60*60*24*30.44);
-  if(m<6) return 'g';
-  if(m<12) return 'y';
-  return 'r';
+  return m<6 ? 'g' : m<12 ? 'y' : 'r';
 }
 function statusLabel(rel){
   if(!rel) return 'Sin dato';
   const m=(new Date()-new Date(rel))/(1000*60*60*24*30.44);
-  const mr=Math.round(m);
-  if(m<6) return `Al día (${mr}m)`;
-  if(m<12) return `Por vencer (${mr}m)`;
-  return `VENCIDO (${mr}m)`;
+  return m<6 ? `Al día (${Math.round(m)}m)` : m<12 ? `Por vencer (${Math.round(m)}m)` : `VENCIDO (${Math.round(m)}m)`;
 }
 function fmtDate(d){if(!d)return '—';const p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0];}
-
-// ===== MAP =====
-function initMap(){
-  map=L.map('map',{center:[-46.2,-68.5],zoom:7,zoomControl:true,attributionControl:true});
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(map);
+function hlPanel(id){
+  document.querySelectorAll('.ni').forEach(e=>e.classList.remove('sel'));
+  const el=document.getElementById('ni-'+id);
+  if(el){el.classList.add('sel'); el.scrollIntoView({behavior:'smooth',block:'nearest'});}
 }
-
-const SC={g:'#00cc66',y:'#ffaa00',r:'#ff3344',gr:'#3a5060'};
-const TI={central:'⬡',shelter:'▪',repetidora:'△'};
-
-function makeIcon(s,tipo){
-  const c=SC[s];
-  const ic=TI[tipo]||'●';
-  const pulse=s==='r'?`<div style="position:absolute;inset:-3px;border-radius:50%;border:1.5px solid ${c};animation:mpls 1.5s infinite;pointer-events:none"></div>`:'';
-  const html=`<div style="width:32px;height:32px;border-radius:50%;background:${c}22;border:2px solid ${c};box-shadow:0 0 10px ${c}88;display:flex;align-items:center;justify-content:center;font-size:12px;position:relative;cursor:pointer">${pulse}${ic}</div>`;
-  return L.divIcon({html,className:'',iconSize:[32,32],iconAnchor:[16,16],popupAnchor:[0,-20]});
-}
-
 function getFiltered(){
   const q=document.getElementById('srch').value.toLowerCase();
   return nodos.filter(n=>{
@@ -392,159 +419,30 @@ function getFiltered(){
   });
 }
 
-function renderMarkers(){
-  Object.values(markers).forEach(m=>map.removeLayer(m));
-  markers={};
-  getFiltered().forEach(n=>{
-    const s=status(n.rel);
-    const mk=L.marker([n.lat,n.lng],{icon:makeIcon(s,n.tipo)}).addTo(map);
-    const ph=`<div class="npop">
-      <div class="npop-hdr ${s}">
-        <div class="npop-name">${n.name}</div>
-        <div class="npop-sub">${n.sub}</div>
-      </div>
-      <div class="npop-body">
-        <div class="npop-row"><span>Estado</span><span class="npop-val ${s}">${statusLabel(n.rel)}</span></div>
-        <div class="npop-row"><span>Últ. relevamiento</span><span class="npop-val">${fmtDate(n.rel)}</span></div>
-        <div class="npop-row"><span>Tipo</span><span class="npop-val">${n.tipo}</span></div>
-        <div class="npop-row"><span>Zona</span><span class="npop-val">${n.zona==='crv'?'Comodoro Rivadavia':'Provincia'}</span></div>
-      </div>
-      <button class="npop-btn" onclick="goSala('${n.id}')">→ ABRIR SALA</button>
-    </div>`;
-    mk.bindPopup(ph,{maxWidth:240,className:''});
-    mk.on('click',()=>hlPanel(n.id));
-    markers[n.id]=mk;
-  });
+function initMap(){
+  map=L.map('map',{center:[-46.2,-68.5],zoom:7});
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+}
+const SC={g:'#00cc66',y:'#ffaa00',r:'#ff3344',gr:'#3a5060'}, TI={central:'⬡',shelter:'▪',repetidora:'△'};
+function makeIcon(s,tipo){
+  const c=SC[s], ic=TI[tipo]||'●';
+  const pulse=s==='r'?`<div style="position:absolute;inset:-3px;border-radius:50%;border:1.5px solid ${c};animation:mpls 1.5s infinite;pointer-events:none"></div>`:'';
+  return L.divIcon({html:`<div style="width:32px;height:32px;border-radius:50%;background:${c}22;border:2px solid ${c};box-shadow:0 0 10px ${c}88;display:flex;align-items:center;justify-content:center;font-size:12px;position:relative;cursor:pointer">${pulse}${ic}</div>`,className:'',iconSize:[32,32],iconAnchor:[16,16],popupAnchor:[0,-20]});
 }
 
-function renderPanel(){
-  const filtered=getFiltered();
-  document.getElementById('rpCnt').textContent=filtered.length+' nodos';
-  const list=document.getElementById('rpList');
-  list.innerHTML='';
-  const crv=filtered.filter(n=>n.zona==='crv');
-  const prov=filtered.filter(n=>n.zona==='prov');
-  const addGroup=(title,nodes)=>{
-    if(!nodes.length)return;
-    const h=document.createElement('div');h.className='rp-group-hdr';h.textContent='// '+title;list.appendChild(h);
-    nodes.forEach(n=>{
-      const s=status(n.rel);
-      const el=document.createElement('div');el.className='ni';el.id='ni-'+n.id;
-      el.innerHTML=`<span class="ni-dot ${s}"></span>
-        <div class="ni-info"><div class="ni-name">${n.name}</div><div class="ni-sub">${n.sub}</div></div>
-        <div class="ni-date ${s}">${fmtDate(n.rel)||'S/D'}</div>`;
-      el.onclick=()=>{if(markers[n.id]){map.setView([n.lat,n.lng],13,{animate:true});setTimeout(()=>markers[n.id].openPopup(),400);}hlPanel(n.id);};
-      list.appendChild(el);
-    });
-  };
-  addGroup('COMODORO RIVADAVIA',crv);
-  addGroup('PROVINCIA',prov);
-}
-
-function renderStats(){
-  let g=0,y=0,r=0,gr=0;
-  nodos.forEach(n=>{const s=status(n.rel);if(s==='g')g++;else if(s==='y')y++;else if(s==='r')r++;else gr++;});
-  document.getElementById('sTotal').textContent=nodos.length;
-  document.getElementById('sG').textContent=g;
-  document.getElementById('sY').textContent=y;
-  document.getElementById('sR').textContent=r;
-  document.getElementById('sGr').textContent=gr;
-}
-
-function hlPanel(id){
-  document.querySelectorAll('.ni').forEach(e=>e.classList.remove('sel'));
-  const el=document.getElementById('ni-'+id);
-  if(el){el.classList.add('sel');el.scrollIntoView({behavior:'smooth',block:'nearest'});}
-}
-
-function setFilter(f){
-  curFilter=f;
-  const ids=['all','g','y','r','crv','prov'];
-  const cls={all:'on',g:'on-g',y:'on-y',r:'on-r',crv:'on',prov:'on'};
-  ids.forEach(id=>{
-    const el=document.getElementById('fb-'+id);
-    if(!el)return;
-    el.className='fb'+(id===f?' '+cls[f]:'');
-  });
-  render();
-}
-
-function openAddModal(){
-  // Limpiar campos
-  ['an-name','an-sub','an-lat','an-lng','an-rel'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('an-tipo').value='central';
-  document.getElementById('an-zona').value='crv';
-  document.getElementById('addModal').classList.remove('hidden');
-}
-function closeAddModal(){
-  document.getElementById('addModal').classList.add('hidden');
-}
-function saveNewNodo(){
-  const name = document.getElementById('an-name').value.trim();
-  const sub  = document.getElementById('an-sub').value.trim();
-  const tipo = document.getElementById('an-tipo').value;
-  const zona = document.getElementById('an-zona').value;
-  const latS = document.getElementById('an-lat').value.trim();
-  const lngS = document.getElementById('an-lng').value.trim();
-  const rel  = document.getElementById('an-rel').value||null;
-
-  if(!name){ alert('⚠ Ingresá el nombre del nodo'); return; }
-  if(!latS || !lngS){ alert('⚠ Las coordenadas son obligatorias'); return; }
-  const lat = parseFloat(latS);
-  const lng = parseFloat(lngS);
-  if(isNaN(lat)||isNaN(lng)){ alert('⚠ Las coordenadas deben ser números decimales\nEj: -45.8645538'); return; }
-  if(lat<-90||lat>90||lng<-180||lng>180){ alert('⚠ Coordenadas fuera de rango\nLatitud: -90 a 90\nLongitud: -180 a 180'); return; }
-
-  // Generar ID único
-  const id = 'custom_' + Date.now();
-
-  const newNodo = { id, name, sub: sub||tipo.toUpperCase(), lat, lng, tipo, zona, rel };
-
-  nodos.push(newNodo);
-  saveAllToCloud();
-  loadRel();
-  render();
-  closeAddModal();
-
-  // Centrar el mapa en el nuevo nodo
-  setTimeout(()=>{
-    map.setView([lat,lng],12,{animate:true});
-    if(markers[id]) setTimeout(()=>markers[id].openPopup(),600);
-  },200);
-  alert('✅ Nodo agregado: '+name);
-}
-
-function render(){renderStats();renderMarkers();renderPanel();}
-function goSala(id){window.location.href='/Sala-Tx/sala.html?id='+id;}
-function logout(){sessionStorage.clear();window.location.href='/Sala-Tx/index.html';}
-
-// Clock
-setInterval(()=>{const n=new Date();document.getElementById('clk').textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0');},1000);
-
-// Pulse animation
-const st=document.createElement('style');
-st.textContent='@keyframes mpls{0%{transform:scale(1);opacity:.6}100%{transform:scale(2.2);opacity:0}}';
-document.head.appendChild(st);
-
-// ESCUCHA EN TIEMPO REAL
+// SINCRONIZACIÓN EN TIEMPO REAL
 onSnapshot(doc(db, "nodos", "estado_general"), (docSnap) => {
   if (docSnap.exists()) {
     const cloudData = docSnap.data();
-    nodos.forEach(n => {
-      if(cloudData[n.id]) {
-        n.rel = cloudData[n.id].rel || n.rel;
-        n.lat = cloudData[n.id].lat || n.lat;
-        n.lng = cloudData[n.id].lng || n.lng;
-      }
-    });
-    render(); 
+    nodos.forEach(n => { if(cloudData[n.id]) n.rel = cloudData[n.id].rel || n.rel; });
+    window.render();
   }
 });
 
-// INIT
-loadRel();
+setInterval(()=>{const n=new Date();document.getElementById('clk').textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0');},1000);
+const st=document.createElement('style'); st.textContent='@keyframes mpls{0%{transform:scale(1);opacity:.6}100%{transform:scale(2.2);opacity:0}}'; document.head.appendChild(st);
+
 initMap();
-render();
 </script>
 </body>
 </html>
