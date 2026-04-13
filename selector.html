@@ -3,9 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TX Patagonia — Mapa de Nodos</title>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-2H5S29NZ9Y"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2H5S29NZ9Y');</script>
+<title>TX Patagonia — Mapa de Nodos (Cloud Sync)</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;800&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -14,515 +12,197 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
 body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.06) 3px,rgba(0,0,0,0.06) 4px);pointer-events:none;z-index:9999}
-
 header{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:var(--panel);border-bottom:1px solid var(--border);height:52px;flex-shrink:0;z-index:1000;position:relative}
 .logo{font-family:'Orbitron',sans-serif;font-size:.95rem;font-weight:900;color:var(--accent);letter-spacing:3px;text-shadow:0 0 15px rgba(0,170,255,.4)}
 .logo span{display:block;font-size:.55rem;color:var(--dim);letter-spacing:5px;font-family:'Share Tech Mono',monospace;margin-top:1px}
 .hdr-right{display:flex;align-items:center;gap:12px}
 .clock{font-family:'Share Tech Mono',monospace;font-size:.8rem;color:var(--accent)}
-.user-lbl{font-family:'Share Tech Mono',monospace;font-size:.68rem;color:var(--dim)}
-.btn-sm{padding:4px 12px;background:transparent;border:1px solid var(--border);color:var(--dim);font-family:'Share Tech Mono',monospace;font-size:.62rem;cursor:pointer;border-radius:3px;transition:all .2s}
-.btn-sm:hover{border-color:var(--danger);color:var(--danger)}
-
-.stats-bar{display:flex;align-items:stretch;background:var(--panel);border-bottom:1px solid var(--border);flex-shrink:0;z-index:999;position:relative}
-.stat-block{display:flex;align-items:center;gap:10px;padding:8px 18px;border-right:1px solid var(--border);cursor:pointer;transition:background .2s;flex:1;justify-content:center}
-.stat-block:hover{background:rgba(255,255,255,.025)}
-.stat-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+.stats-bar{display:flex;align-items:stretch;background:var(--panel);border-bottom:1px solid var(--border);flex-shrink:0;z-index:999}
+.stat-block{display:flex;align-items:center;gap:10px;padding:8px 18px;border-right:1px solid var(--border);cursor:pointer;flex:1;justify-content:center}
+.stat-dot{width:11px;height:11px;border-radius:50%}
 .stat-dot.g{background:#00cc66;box-shadow:0 0 8px rgba(0,204,102,.7)}
 .stat-dot.y{background:var(--warn);box-shadow:0 0 8px rgba(255,170,0,.7)}
 .stat-dot.r{background:var(--danger);box-shadow:0 0 8px rgba(255,51,68,.7);animation:sdPulse 1.5s infinite}
 .stat-dot.gr{background:var(--dim)}
 @keyframes sdPulse{0%,100%{opacity:1}50%{opacity:.3}}
-.stat-n{font-family:'Orbitron',sans-serif;font-size:1.15rem;font-weight:700;color:#fff;line-height:1}
-.stat-l{font-family:'Share Tech Mono',monospace;font-size:.55rem;color:var(--dim);line-height:1.4;margin-top:1px}
-.stat-total{padding:8px 18px;border-right:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
-.stat-total-n{font-family:'Orbitron',sans-serif;font-size:1.15rem;color:var(--accent)}
-.stat-total-l{font-family:'Share Tech Mono',monospace;font-size:.55rem;color:var(--dim)}
-
-.filter-bar{display:flex;align-items:center;gap:6px;padding:5px 14px;background:rgba(5,8,15,.95);border-bottom:1px solid var(--border);flex-shrink:0;z-index:999;position:relative}
-.fl{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--dim);margin-right:2px}
-.fb{padding:3px 10px;background:transparent;border:1px solid var(--border);color:var(--dim);font-family:'Share Tech Mono',monospace;font-size:.58rem;cursor:pointer;border-radius:3px;transition:all .2s;letter-spacing:.5px}
-.fb:hover{border-color:var(--accent);color:var(--accent)}
+.stat-n{font-family:'Orbitron',sans-serif;font-size:1.15rem;font-weight:700;color:#fff}
+.stat-l{font-family:'Share Tech Mono',monospace;font-size:.55rem;color:var(--dim)}
+.filter-bar{display:flex;align-items:center;gap:6px;padding:5px 14px;background:rgba(5,8,15,.95);border-bottom:1px solid var(--border)}
+.fb{padding:3px 10px;background:transparent;border:1px solid var(--border);color:var(--dim);font-family:'Share Tech Mono',monospace;font-size:.58rem;cursor:pointer;border-radius:3px}
 .fb.on{border-color:var(--accent);color:var(--accent);background:rgba(0,170,255,.08)}
-.fb.on-g{border-color:#00cc66;color:#00cc66;background:rgba(0,204,102,.07)}
-.fb.on-y{border-color:var(--warn);color:var(--warn);background:rgba(255,170,0,.07)}
-.fb.on-r{border-color:var(--danger);color:var(--danger);background:rgba(255,51,68,.07)}
-.srch{margin-left:auto;background:rgba(0,170,255,.04);border:1px solid var(--border);color:var(--text);padding:3px 10px;font-family:'Share Tech Mono',monospace;font-size:.65rem;border-radius:3px;outline:none;width:170px;transition:all .2s}
-.srch:focus{border-color:var(--accent)}
-.srch::placeholder{color:var(--dim)}
-
 .main{display:flex;flex:1;overflow:hidden;position:relative}
 #map{flex:1;z-index:1}
-
-/* Dark map tiles */
 .leaflet-tile{filter:brightness(.28) saturate(.25) hue-rotate(190deg)!important}
-.leaflet-container{background:#070b14!important}
-.leaflet-control-zoom{border:1px solid var(--border)!important;background:var(--panel)!important;border-radius:4px!important}
-.leaflet-control-zoom a{background:var(--panel)!important;color:var(--text)!important;border-bottom:1px solid var(--border)!important;line-height:26px!important;width:26px!important;height:26px!important;font-size:14px!important}
-.leaflet-control-zoom a:hover{background:rgba(0,170,255,.1)!important;color:var(--accent)!important}
-.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:transparent!important;box-shadow:none!important;border:none!important}
-.leaflet-popup-content{margin:0!important;padding:0!important}
-.leaflet-popup-tip-container{display:none!important}
-.leaflet-attribution-flag{display:none!important}
-.leaflet-control-attribution{background:rgba(5,8,15,.8)!important;color:var(--dim)!important;font-size:.55rem!important;border-top:1px solid var(--border)!important}
-.leaflet-control-attribution a{color:var(--dim)!important}
-
-/* RIGHT PANEL */
-.rpanel{width:300px;flex-shrink:0;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;z-index:2}
-.rp-hdr{padding:9px 14px;border-bottom:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--dim);letter-spacing:3px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.rpanel{width:300px;flex-shrink:0;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.rp-hdr{padding:9px 14px;border-bottom:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--dim)}
 .rp-list{flex:1;overflow-y:auto}
-.rp-group-hdr{padding:5px 14px;background:rgba(0,170,255,.04);border-bottom:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:.56rem;color:var(--dim);letter-spacing:3px;position:sticky;top:0;z-index:10}
-.ni{padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.035);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:9px}
-.ni:hover{background:rgba(0,170,255,.05)}
-.ni.sel{background:rgba(0,255,204,.04);border-left:2px solid var(--accent2)}
-.ni-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.ni-dot.g{background:#00cc66;box-shadow:0 0 4px rgba(0,204,102,.6)}
-.ni-dot.y{background:var(--warn);box-shadow:0 0 4px rgba(255,170,0,.6)}
-.ni-dot.r{background:var(--danger);box-shadow:0 0 4px rgba(255,51,68,.6)}
-.ni-dot.gr{background:var(--dim)}
-.ni-info{flex:1;min-width:0}
-.ni-name{font-size:.78rem;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ni-sub{font-family:'Share Tech Mono',monospace;font-size:.56rem;color:var(--dim);margin-top:1px}
-.ni-date{font-family:'Share Tech Mono',monospace;font-size:.56rem;flex-shrink:0;text-align:right}
-.ni-date.g{color:#00cc66}
-.ni-date.y{color:var(--warn)}
-.ni-date.r{color:var(--danger)}
-.ni-date.gr{color:var(--dim)}
-
-/* POPUP */
-.npop{background:rgba(8,13,24,.97);border:1px solid var(--border);border-radius:5px;overflow:hidden;min-width:210px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
-.npop-hdr{padding:9px 12px;border-bottom:1px solid var(--border);position:relative}
-.npop-hdr::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
-.npop-hdr.g::before{background:linear-gradient(90deg,transparent,#00cc66,transparent)}
-.npop-hdr.y::before{background:linear-gradient(90deg,transparent,var(--warn),transparent)}
-.npop-hdr.r::before{background:linear-gradient(90deg,transparent,var(--danger),transparent)}
-.npop-hdr.gr::before{background:linear-gradient(90deg,transparent,var(--dim),transparent)}
-.npop-name{font-family:'Orbitron',sans-serif;font-size:.75rem;color:#fff;margin-bottom:2px}
-.npop-sub{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--dim)}
-.npop-body{padding:8px 12px}
-.npop-row{display:flex;justify-content:space-between;padding:3px 0;font-family:'Share Tech Mono',monospace;font-size:.6rem;border-bottom:1px solid rgba(255,255,255,.04)}
-.npop-row:last-child{border:none}
-.npop-val{font-weight:600}
-.npop-val.g{color:#00cc66}
-.npop-val.y{color:var(--warn)}
-.npop-val.r{color:var(--danger)}
-.npop-val.gr{color:var(--dim)}
-.npop-btn{display:block;width:100%;padding:7px;background:rgba(0,170,255,.1);border:none;border-top:1px solid var(--border);color:var(--accent);font-family:'Share Tech Mono',monospace;font-size:.62rem;cursor:pointer;letter-spacing:1px;transition:all .2s}
-.npop-btn:hover{background:rgba(0,170,255,.2)}
-
-::-webkit-scrollbar{width:4px}
-::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-
-/* ADD NODE MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;display:flex;align-items:center;justify-content:center}
-.modal-overlay.hidden{display:none}
-.modal-box{background:var(--panel);border:1px solid var(--accent);border-radius:6px;width:400px;max-width:95vw;box-shadow:0 0 30px rgba(0,170,255,.2)}
-.modal-title{padding:12px 16px;border-bottom:1px solid var(--border);font-family:'Orbitron',sans-serif;font-size:.7rem;color:var(--accent);letter-spacing:2px;display:flex;justify-content:space-between;align-items:center}
-.modal-close{background:none;border:none;color:var(--dim);cursor:pointer;font-size:1.1rem;line-height:1}
-.modal-close:hover{color:var(--danger)}
-.modal-body{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
-.mfg{display:flex;flex-direction:column;gap:3px}
-.mfg label{font-family:'Share Tech Mono',monospace;font-size:.56rem;color:var(--dim);letter-spacing:1px}
-.mfg input,.mfg select{background:rgba(0,170,255,.04);border:1px solid var(--border);color:var(--text);padding:6px 10px;font-family:'Share Tech Mono',monospace;font-size:.68rem;border-radius:3px;outline:none;transition:border-color .2s;width:100%}
-.mfg input:focus,.mfg select:focus{border-color:var(--accent)}
-.mfg select option{background:var(--panel)}
-.mfg-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.modal-foot{padding:10px 16px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
-.btn-add{padding:6px 18px;background:rgba(0,170,255,.15);border:1px solid var(--accent);color:var(--accent);font-family:'Share Tech Mono',monospace;font-size:.65rem;cursor:pointer;border-radius:3px;transition:all .2s}
-.btn-add:hover{background:rgba(0,170,255,.3)}
-.btn-cancel{padding:6px 14px;background:transparent;border:1px solid var(--border);color:var(--dim);font-family:'Share Tech Mono',monospace;font-size:.65rem;cursor:pointer;border-radius:3px;transition:all .2s}
-.btn-cancel:hover{border-color:var(--danger);color:var(--danger)}
-.btn-add-nodo{padding:4px 12px;background:rgba(0,255,204,.1);border:1px solid var(--accent2);color:var(--accent2);font-family:'Share Tech Mono',monospace;font-size:.6rem;cursor:pointer;border-radius:3px;transition:all .2s;letter-spacing:.5px}
-.btn-add-nodo:hover{background:rgba(0,255,204,.2)}
-.coord-hint{font-family:'Share Tech Mono',monospace;font-size:.55rem;color:var(--dim);margin-top:2px}
+.ni{padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.035);cursor:pointer;display:flex;align-items:center;gap:9px}
+.ni-name{font-size:.78rem;font-weight:600;color:#fff}
+.npop{background:rgba(8,13,24,.97);border:1px solid var(--border);border-radius:5px;overflow:hidden;min-width:210px}
+.npop-hdr{padding:9px 12px;border-bottom:1px solid var(--border)}
+.npop-name{font-family:'Orbitron',sans-serif;font-size:.75rem;color:#fff}
+.npop-btn{display:block;width:100%;padding:7px;background:rgba(0,170,255,.1);border:none;color:var(--accent);cursor:pointer}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">TX PATAGONIA <span>SISTEMA DE GESTIÓN DE NODOS</span></div>
+  <div class="logo">TX PATAGONIA <span>MONITOREO CLOUD</span></div>
   <div class="hdr-right">
-    <div class="user-lbl">👤 <span id="uName">---</span></div>
     <div class="clock" id="clk">--:--:--</div>
-    <button class="btn-sm" onclick="logout()">SALIR</button>
   </div>
 </header>
 
 <div class="stats-bar">
-  <div class="stat-total">
-    <div class="stat-total-n" id="sTotal">0</div>
-    <div class="stat-total-l">NODOS<br>TOTALES</div>
-  </div>
-  <div class="stat-block" onclick="setFilter('g')">
-    <span class="stat-dot g"></span>
-    <div><div class="stat-n" id="sG">0</div><div class="stat-l">AL DÍA<br>&lt;6 MESES</div></div>
-  </div>
-  <div class="stat-block" onclick="setFilter('y')">
-    <span class="stat-dot y"></span>
-    <div><div class="stat-n" id="sY">0</div><div class="stat-l">POR VENCER<br>6–12 MESES</div></div>
-  </div>
-  <div class="stat-block" onclick="setFilter('r')">
-    <span class="stat-dot r"></span>
-    <div><div class="stat-n" id="sR">0</div><div class="stat-l">VENCIDO<br>&gt;12 MESES</div></div>
-  </div>
-  <div class="stat-block" onclick="setFilter('gr')">
-    <span class="stat-dot gr"></span>
-    <div><div class="stat-n" id="sGr">0</div><div class="stat-l">SIN DATO<br>RELEVAMIENTO</div></div>
-  </div>
+  <div class="stat-block"><span class="stat-dot g"></span><div><div class="stat-n" id="sG">0</div><div class="stat-l">AL DÍA</div></div></div>
+  <div class="stat-block"><span class="stat-dot y"></span><div><div class="stat-n" id="sY">0</div><div class="stat-l">POR VENCER</div></div></div>
+  <div class="stat-block"><span class="stat-dot r"></span><div><div class="stat-n" id="sR">0</div><div class="stat-l">VENCIDO</div></div></div>
+  <div class="stat-block"><span class="stat-dot gr"></span><div><div class="stat-n" id="sGr">0</div><div class="stat-l">S/D</div></div></div>
 </div>
 
 <div class="filter-bar">
-  <span class="fl">FILTRAR:</span>
-  <button class="fb on" id="fb-all" onclick="setFilter('all')">TODOS</button>
-  <button class="fb" id="fb-g" onclick="setFilter('g')">● AL DÍA</button>
-  <button class="fb" id="fb-y" onclick="setFilter('y')">● POR VENCER</button>
-  <button class="fb" id="fb-r" onclick="setFilter('r')">● VENCIDO</button>
-  <button class="fb" id="fb-crv" onclick="setFilter('crv')">COMODORO</button>
-  <button class="fb" id="fb-prov" onclick="setFilter('prov')">PROVINCIA</button>
-  <input class="srch" id="srch" placeholder="Buscar nodo..." oninput="render()"/>
-  <button class="btn-add-nodo" id="btn-add-nodo" style="display:none" onclick="openAddModal()">+ AGREGAR NODO</button>
-</div>
-
-<!-- MODAL AGREGAR NODO -->
-<div class="modal-overlay hidden" id="addModal">
-  <div class="modal-box">
-    <div class="modal-title">
-      <span>// AGREGAR NUEVO NODO</span>
-      <button class="modal-close" onclick="closeAddModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="mfg">
-        <label>NOMBRE DEL NODO</label>
-        <input id="an-name" type="text" placeholder="Ej: Sala Tx01 — Caleta Córdova"/>
-      </div>
-      <div class="mfg">
-        <label>DESCRIPCIÓN / SUBTÍTULO</label>
-        <input id="an-sub" type="text" placeholder="Ej: CENTRAL · ZONA NORTE"/>
-      </div>
-      <div class="mfg-row">
-        <div class="mfg">
-          <label>TIPO</label>
-          <select id="an-tipo">
-            <option value="central">Central</option>
-            <option value="shelter">Shelter</option>
-            <option value="repetidora">Repetidora</option>
-          </select>
-        </div>
-        <div class="mfg">
-          <label>ZONA</label>
-          <select id="an-zona">
-            <option value="crv">Comodoro Rivadavia</option>
-            <option value="prov">Provincia</option>
-          </select>
-        </div>
-      </div>
-      <div class="mfg-row">
-        <div class="mfg">
-          <label>LATITUD</label>
-          <input id="an-lat" type="text" placeholder="-45.8645538"/>
-          <div class="coord-hint">Negativo para sur</div>
-        </div>
-        <div class="mfg">
-          <label>LONGITUD</label>
-          <input id="an-lng" type="text" placeholder="-67.4921585"/>
-          <div class="coord-hint">Negativo para oeste</div>
-        </div>
-      </div>
-      <div class="mfg">
-        <label>ÚLTIMO RELEVAMIENTO (opcional)</label>
-        <input id="an-rel" type="date"/>
-      </div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn-cancel" onclick="closeAddModal()">CANCELAR</button>
-      <button class="btn-add" onclick="saveNewNodo()">✓ AGREGAR AL MAPA</button>
-    </div>
-  </div>
+  <button class="fb on" id="fb-all">TODOS</button>
+  <input type="text" id="srch" placeholder="Buscar nodo..." oninput="render()" style="margin-left:auto; background:rgba(0,170,255,0.05); border:1px solid var(--border); color:white; padding:4px 10px; font-size:11px;">
 </div>
 
 <div class="main">
   <div id="map"></div>
   <div class="rpanel">
-    <div class="rp-hdr"><span>// NODOS</span><span id="rpCnt" style="color:var(--accent)">0</span></div>
+    <div class="rp-hdr">// ESTADO TIEMPO REAL</div>
     <div class="rp-list" id="rpList"></div>
   </div>
 </div>
 
-<script>
-if(!sessionStorage.getItem('noc_auth')){window.location.href='/Sala-Tx/index.html';}
-const currentUser = sessionStorage.getItem('noc_user')||'';
-document.getElementById('uName').textContent = currentUser;
-// Mostrar botón solo para admin
-if(currentUser === 'admin') document.getElementById('btn-add-nodo').style.display='inline-block';
+<script type="module">
+  // IMPORTAR FIREBASE
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// ===== NODOS =====
-const NODOS = [
-  // COMODORO RIVADAVIA
-  {id:'tx01centro',   name:'Sala Tx01 — Centro',         sub:'4TO PISO · CENTRAL PRINCIPAL', lat:-45.8645538, lng:-67.4921585, tipo:'central',    zona:'crv', rel:null},
-  {id:'tx02centro',   name:'Sala Tx02 — Centro',         sub:'1ER PISO · CENTRAL',           lat:-45.8648000, lng:-67.4918000, tipo:'central',    zona:'crv', rel:null},
-  {id:'vpuey',        name:'Sala Tx01 — V. Pueyrredón',  sub:'CENTRAL GRANDE',               lat:-45.8820458, lng:-67.5318774, tipo:'central',    zona:'crv', rel:null},
-  {id:'radatilly',    name:'Sala Tx01 — Rada Tilly',     sub:'CENTRAL',                      lat:-45.931528,  lng:-67.556389,  tipo:'central',    zona:'crv', rel:null},
-  {id:'cerrotanque',  name:'Sala Tx01 — Cerro Tanque',   sub:'CENTRAL ALTA',                 lat:-45.827361,  lng:-67.519861,  tipo:'central',    zona:'crv', rel:null},
-  {id:'laprida',      name:'Sala Tx01 — Laprida',        sub:'CENTRAL',                      lat:-45.8290701, lng:-67.5430865, tipo:'central',    zona:'crv', rel:null},
-  {id:'palazzo',      name:'Tx01 — Palazzo',             sub:'CENTRAL',                      lat:-45.7953957, lng:-67.4783992, tipo:'central',    zona:'crv', rel:null},
-  {id:'donbosco',     name:'Shelter Tx01 — Don Bosco',   sub:'SHELTER',                      lat:-45.7945,    lng:-67.421528,  tipo:'shelter',    zona:'crv', rel:null},
-  {id:'mosconi',      name:'Sala Tx01 — Gral. Mosconi',  sub:'CENTRAL',                      lat:-45.839167,  lng:-67.479417,  tipo:'central',    zona:'crv', rel:null},
-  {id:'cerrotosca',   name:'Tx01 — Cerro Tosca',         sub:'CENTRAL',                      lat:-45.859694,  lng:-67.912861,  tipo:'central',    zona:'crv', rel:null},
-  {id:'mcdonald',     name:'Tx01 — McDonald',            sub:'CENTRAL',                      lat:-46.612361,  lng:-68.487639,  tipo:'central',    zona:'crv', rel:null},
-
-  // PROVINCIA
-  {id:'menucos',      name:'Menucos — Tx01',             sub:'CENTRAL',                      lat:-45.968139,  lng:-67.924389,  tipo:'central',    zona:'prov', rel:null},
-  {id:'caletaolivia', name:'Caleta Olivia — Shelter Tx01',sub:'SHELTER',                     lat:-46.439167,  lng:-67.5165,    tipo:'shelter',    zona:'prov', rel:null},
-  {id:'tgspicot',     name:'TGS Pico Truncado',          sub:'REPETIDORA',                   lat:-46.662722,  lng:-67.940306,  tipo:'repetidora', zona:'prov', rel:null},
-  {id:'picotruncado', name:'Pico Truncado — Tx01',       sub:'CENTRAL',                      lat:-46.799139,  lng:-67.959333,  tipo:'central',    zona:'prov', rel:null},
-  {id:'lasheras',     name:'Las Heras — Tx01',           sub:'CENTRAL',                      lat:-46.542167,  lng:-68.935056,  tipo:'central',    zona:'prov', rel:null},
-  {id:'jaramillo',    name:'Jaramillo — Tx01',           sub:'REPETIDORA',                   lat:-47.188667,  lng:-67.137833,  tipo:'repetidora', zona:'prov', rel:null},
-  {id:'puertodeseado',name:'Puerto Deseado — Tx01',      sub:'CENTRAL',                      lat:-47.750333,  lng:-65.894306,  tipo:'central',    zona:'prov', rel:null},
-  {id:'reppdeseado',  name:'Rep. Puerto Deseado',        sub:'REPETIDORA',                   lat:-47.745194,  lng:-65.897389,  tipo:'repetidora', zona:'prov', rel:null},
-  {id:'repquinta',    name:'Rep. Quinta',                sub:'REPETIDORA',                   lat:-47.516667,  lng:-67.269778,  tipo:'repetidora', zona:'prov', rel:null},
-  {id:'peritomoreno', name:'Perito Moreno — Tx01',       sub:'CENTRAL',                      lat:-46.592694,  lng:-70.927417,  tipo:'central',    zona:'prov', rel:null},
-  {id:'repperito',    name:'Rep. Perito Moreno',         sub:'REPETIDORA',                   lat:-46.589306,  lng:-70.977806,  tipo:'repetidora', zona:'prov', rel:null},
-  {id:'losantiguos',  name:'Los Antiguos — Tx01',        sub:'CENTRAL',                      lat:-46.544139,  lng:-71.6265,    tipo:'central',    zona:'prov', rel:null},
-  {id:'elgauchito',   name:'El Gauchito — Tx01',         sub:'REPETIDORA',                   lat:-45.953028,  lng:-70.406167,  tipo:'repetidora', zona:'prov', rel:null},
-  {id:'riomayo',      name:'Río Mayo — Tx01',            sub:'CENTRAL',                      lat:-45.692722,  lng:-70.246528,  tipo:'central',    zona:'prov', rel:null},
-  {id:'riosenguer',   name:'Río Senguer — Tx01',         sub:'CENTRAL',                      lat:-45.038556,  lng:-70.824472,  tipo:'central',    zona:'prov', rel:null},
-  {id:'sarmiento',    name:'Sarmiento — Tx01',           sub:'CENTRAL',                      lat:-45.587083,  lng:-69.071333,  tipo:'central',    zona:'prov', rel:null},
-  {id:'makiavelli',   name:'Makiavelli — Tx01',          sub:'CENTRAL',                      lat:-45.757694,  lng:-68.269389,  tipo:'central',    zona:'prov', rel:null},
-  {id:'picosalamanca',name:'Pico Salamanca — Tx01',      sub:'REPETIDORA',                   lat:-45.404333,  lng:-67.413889,  tipo:'repetidora', zona:'prov', rel:null},
-  {id:'malaspina',    name:'Malaspina — Tx01',           sub:'REPETIDORA',                   lat:-45.018972,  lng:-67.106389,  tipo:'repetidora', zona:'prov', rel:null},
-  {id:'garayalde',    name:'Garayalde — Tx01',           sub:'REPETIDORA',                   lat:-44.686278,  lng:-66.618694,  tipo:'repetidora', zona:'prov', rel:null},
-];
-
-const SK='noc_nodos_rel';
-const SK_EXTRA='noc_nodos_extra';
-let nodos=[...NODOS];
-let markers={};
-let curFilter='all';
-let map;
-
-// Load saved relevamiento dates + custom nodos
-function loadRel(){
-  try{
-    // Cargar nodos extra guardados por el admin
-    const extra=JSON.parse(localStorage.getItem(SK_EXTRA)||'[]');
-    nodos=[...NODOS,...extra];
-  }catch(e){ nodos=[...NODOS]; }
-  try{
-    const saved=JSON.parse(localStorage.getItem(SK)||'{}');
-    nodos.forEach(n=>{ if(saved[n.id]) n.rel=saved[n.id]; });
-  }catch(e){}
-}
-function saveRel(id,date){
-  try{
-    const saved=JSON.parse(localStorage.getItem(SK)||'{}');
-    saved[id]=date;
-    localStorage.setItem(SK,JSON.stringify(saved));
-    nodos.find(n=>n.id===id).rel=date;
-  }catch(e){}
-}
-
-function status(rel){
-  if(!rel) return 'gr';
-  const m=(new Date()-new Date(rel))/(1000*60*60*24*30.44);
-  if(m<6) return 'g';
-  if(m<12) return 'y';
-  return 'r';
-}
-function statusLabel(rel){
-  if(!rel) return 'Sin dato';
-  const m=(new Date()-new Date(rel))/(1000*60*60*24*30.44);
-  const mr=Math.round(m);
-  if(m<6) return `Al día (${mr}m)`;
-  if(m<12) return `Por vencer (${mr}m)`;
-  return `VENCIDO (${mr}m)`;
-}
-function fmtDate(d){if(!d)return '—';const p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0];}
-
-// ===== MAP =====
-function initMap(){
-  map=L.map('map',{center:[-46.2,-68.5],zoom:7,zoomControl:true,attributionControl:true});
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(map);
-}
-
-const SC={g:'#00cc66',y:'#ffaa00',r:'#ff3344',gr:'#3a5060'};
-const TI={central:'⬡',shelter:'▪',repetidora:'△'};
-
-function makeIcon(s,tipo){
-  const c=SC[s];
-  const ic=TI[tipo]||'●';
-  const pulse=s==='r'?`<div style="position:absolute;inset:-3px;border-radius:50%;border:1.5px solid ${c};animation:mpls 1.5s infinite;pointer-events:none"></div>`:'';
-  const html=`<div style="width:32px;height:32px;border-radius:50%;background:${c}22;border:2px solid ${c};box-shadow:0 0 10px ${c}88;display:flex;align-items:center;justify-content:center;font-size:12px;position:relative;cursor:pointer">${pulse}${ic}</div>`;
-  return L.divIcon({html,className:'',iconSize:[32,32],iconAnchor:[16,16],popupAnchor:[0,-20]});
-}
-
-function getFiltered(){
-  const q=document.getElementById('srch').value.toLowerCase();
-  return nodos.filter(n=>{
-    if(q && !n.name.toLowerCase().includes(q) && !n.sub.toLowerCase().includes(q)) return false;
-    if(curFilter==='g') return status(n.rel)==='g';
-    if(curFilter==='y') return status(n.rel)==='y';
-    if(curFilter==='r') return status(n.rel)==='r';
-    if(curFilter==='gr') return status(n.rel)==='gr';
-    if(curFilter==='crv') return n.zona==='crv';
-    if(curFilter==='prov') return n.zona==='prov';
-    return true;
-  });
-}
-
-function renderMarkers(){
-  Object.values(markers).forEach(m=>map.removeLayer(m));
-  markers={};
-  getFiltered().forEach(n=>{
-    const s=status(n.rel);
-    const mk=L.marker([n.lat,n.lng],{icon:makeIcon(s,n.tipo)}).addTo(map);
-    const ph=`<div class="npop">
-      <div class="npop-hdr ${s}">
-        <div class="npop-name">${n.name}</div>
-        <div class="npop-sub">${n.sub}</div>
-      </div>
-      <div class="npop-body">
-        <div class="npop-row"><span>Estado</span><span class="npop-val ${s}">${statusLabel(n.rel)}</span></div>
-        <div class="npop-row"><span>Últ. relevamiento</span><span class="npop-val">${fmtDate(n.rel)}</span></div>
-        <div class="npop-row"><span>Tipo</span><span class="npop-val">${n.tipo}</span></div>
-        <div class="npop-row"><span>Zona</span><span class="npop-val">${n.zona==='crv'?'Comodoro Rivadavia':'Provincia'}</span></div>
-      </div>
-      <button class="npop-btn" onclick="goSala('${n.id}')">→ ABRIR SALA</button>
-    </div>`;
-    mk.bindPopup(ph,{maxWidth:240,className:''});
-    mk.on('click',()=>hlPanel(n.id));
-    markers[n.id]=mk;
-  });
-}
-
-function renderPanel(){
-  const filtered=getFiltered();
-  document.getElementById('rpCnt').textContent=filtered.length+' nodos';
-  const list=document.getElementById('rpList');
-  list.innerHTML='';
-  const crv=filtered.filter(n=>n.zona==='crv');
-  const prov=filtered.filter(n=>n.zona==='prov');
-  const addGroup=(title,nodes)=>{
-    if(!nodes.length)return;
-    const h=document.createElement('div');h.className='rp-group-hdr';h.textContent='// '+title;list.appendChild(h);
-    nodes.forEach(n=>{
-      const s=status(n.rel);
-      const el=document.createElement('div');el.className='ni';el.id='ni-'+n.id;
-      el.innerHTML=`<span class="ni-dot ${s}"></span>
-        <div class="ni-info"><div class="ni-name">${n.name}</div><div class="ni-sub">${n.sub}</div></div>
-        <div class="ni-date ${s}">${fmtDate(n.rel)||'S/D'}</div>`;
-      el.onclick=()=>{if(markers[n.id]){map.setView([n.lat,n.lng],13,{animate:true});setTimeout(()=>markers[n.id].openPopup(),400);}hlPanel(n.id);};
-      list.appendChild(el);
-    });
+  const firebaseConfig = {
+    apiKey: "AIzaSyBR3LcAtfwfccaPJrGDny4nhi1n-XUdYrc",
+    authDomain: "noc-patagonia.firebaseapp.com",
+    projectId: "noc-patagonia",
+    storageBucket: "noc-patagonia.firebasestorage.app",
+    messagingSenderId: "24526360193",
+    appId: "1:24526360193:web:bb6a64d58e63b09c5a8780",
+    measurementId: "G-W28Y2XCLGX"
   };
-  addGroup('COMODORO RIVADAVIA',crv);
-  addGroup('PROVINCIA',prov);
-}
 
-function renderStats(){
-  let g=0,y=0,r=0,gr=0;
-  nodos.forEach(n=>{const s=status(n.rel);if(s==='g')g++;else if(s==='y')y++;else if(s==='r')r++;else gr++;});
-  document.getElementById('sTotal').textContent=nodos.length;
-  document.getElementById('sG').textContent=g;
-  document.getElementById('sY').textContent=y;
-  document.getElementById('sR').textContent=r;
-  document.getElementById('sGr').textContent=gr;
-}
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-function hlPanel(id){
-  document.querySelectorAll('.ni').forEach(e=>e.classList.remove('sel'));
-  const el=document.getElementById('ni-'+id);
-  if(el){el.classList.add('sel');el.scrollIntoView({behavior:'smooth',block:'nearest'});}
-}
+  // NODOS INICIALES (Si la base está vacía, se cargan estos)
+  const NODOS_ORIGINALES = [
+    {id:'tx01centro', name:'Sala Tx01 — Centro', sub:'4TO PISO · CENTRAL', lat:-45.8645538, lng:-67.4921585, tipo:'central', zona:'crv', rel:null},
+    {id:'tx02centro', name:'Sala Tx02 — Centro', sub:'1ER PISO · CENTRAL', lat:-45.8648000, lng:-67.4918000, tipo:'central', zona:'crv', rel:null},
+    {id:'vpuey', name:'Sala Tx01 — V. Pueyrredón', sub:'CENTRAL GRANDE', lat:-45.8820458, lng:-67.5318774, tipo:'central', zona:'crv', rel:null},
+    {id:'radatilly', name:'Sala Tx01 — Rada Tilly', sub:'CENTRAL', lat:-45.931528, lng:-67.556389, tipo:'central', zona:'crv', rel:null},
+    {id:'cerrotanque', name:'Sala Tx01 — Cerro Tanque', sub:'CENTRAL ALTA', lat:-45.827361, lng:-67.519861, tipo:'central', zona:'crv', rel:null},
+    {id:'laprida', name:'Sala Tx01 — Laprida', sub:'CENTRAL', lat:-45.8290701, lng:-67.5430865, tipo:'central', zona:'crv', rel:null},
+    {id:'palazzo', name:'Tx01 — Palazzo', sub:'CENTRAL', lat:-45.7953957, lng:-67.4783992, tipo:'central', zona:'crv', rel:null},
+    {id:'donbosco', name:'Shelter Tx01 — Don Bosco', sub:'SHELTER', lat:-45.7945, lng:-67.421528, tipo:'shelter', zona:'crv', rel:null},
+    {id:'mosconi', name:'Sala Tx01 — Gral. Mosconi', sub:'CENTRAL', lat:-45.839167, lng:-67.479417, tipo:'central', zona:'crv', rel:null},
+    {id:'menucos', name:'Menucos — Tx01', sub:'CENTRAL', lat:-45.968139, lng:-67.924389, tipo:'central', zona:'prov', rel:null},
+    {id:'caletaolivia', name:'Caleta Olivia — Shelter Tx01', sub:'SHELTER', lat:-46.439167, lng:-67.5165, tipo:'shelter', zona:'prov', rel:null},
+    {id:'picotruncado', name:'Pico Truncado — Tx01', sub:'CENTRAL', lat:-46.799139, lng:-67.959333, tipo:'central', zona:'prov', rel:null}
+  ];
 
-function setFilter(f){
-  curFilter=f;
-  const ids=['all','g','y','r','crv','prov'];
-  const cls={all:'on',g:'on-g',y:'on-y',r:'on-r',crv:'on',prov:'on'};
-  ids.forEach(id=>{
-    const el=document.getElementById('fb-'+id);
-    if(!el)return;
-    el.className='fb'+(id===f?' '+cls[f]:'');
+  let nodos = [...NODOS_ORIGINALES];
+  let markers = {};
+  let map;
+
+  // ESCUCHAR CAMBIOS EN LA NUBE
+  onSnapshot(doc(db, "nodos", "estado_general"), (docSnap) => {
+    if (docSnap.exists()) {
+      const cloudData = docSnap.data();
+      nodos.forEach(n => {
+        if(cloudData[n.id]) {
+          n.rel = cloudData[n.id].rel || n.rel;
+          n.lat = cloudData[n.id].lat || n.lat;
+          n.lng = cloudData[n.id].lng || n.lng;
+        }
+      });
+      render();
+    } else {
+      saveAllToCloud(); // Si no hay nada, subimos la base por primera vez
+    }
   });
-  render();
-}
 
-function openAddModal(){
-  // Limpiar campos
-  ['an-name','an-sub','an-lat','an-lng','an-rel'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('an-tipo').value='central';
-  document.getElementById('an-zona').value='crv';
-  document.getElementById('addModal').classList.remove('hidden');
-}
-function closeAddModal(){
-  document.getElementById('addModal').classList.add('hidden');
-}
-function saveNewNodo(){
-  const name = document.getElementById('an-name').value.trim();
-  const sub  = document.getElementById('an-sub').value.trim();
-  const tipo = document.getElementById('an-tipo').value;
-  const zona = document.getElementById('an-zona').value;
-  const latS = document.getElementById('an-lat').value.trim();
-  const lngS = document.getElementById('an-lng').value.trim();
-  const rel  = document.getElementById('an-rel').value||null;
-
-  if(!name){ alert('⚠ Ingresá el nombre del nodo'); return; }
-  if(!latS || !lngS){ alert('⚠ Las coordenadas son obligatorias'); return; }
-  const lat = parseFloat(latS);
-  const lng = parseFloat(lngS);
-  if(isNaN(lat)||isNaN(lng)){ alert('⚠ Las coordenadas deben ser números decimales\nEj: -45.8645538'); return; }
-  if(lat<-90||lat>90||lng<-180||lng>180){ alert('⚠ Coordenadas fuera de rango\nLatitud: -90 a 90\nLongitud: -180 a 180'); return; }
-
-  // Generar ID único
-  const id = 'custom_' + Date.now();
-
-  const newNodo = { id, name, sub: sub||tipo.toUpperCase(), lat, lng, tipo, zona, rel };
-
-  // Guardar en localStorage
-  try{
-    const extra = JSON.parse(localStorage.getItem(SK_EXTRA)||'[]');
-    extra.push(newNodo);
-    localStorage.setItem(SK_EXTRA, JSON.stringify(extra));
-  }catch(e){}
-
-  // Si tiene relevamiento, guardarlo también
-  if(rel){
-    try{
-      const saved=JSON.parse(localStorage.getItem(SK)||'{}');
-      saved[id]=rel;
-      localStorage.setItem(SK,JSON.stringify(saved));
-    }catch(e){}
+  async function saveAllToCloud() {
+    const dataToSave = {};
+    nodos.forEach(n => {
+      dataToSave[n.id] = { rel: n.rel, lat: n.lat, lng: n.lng };
+    });
+    await setDoc(doc(db, "nodos", "estado_general"), dataToSave);
   }
 
-  // Recargar y cerrar
-  loadRel();
-  render();
-  closeAddModal();
+  function initMap(){
+    map = L.map('map').setView([-45.86, -67.49], 7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+  }
 
-  // Centrar el mapa en el nuevo nodo
-  setTimeout(()=>{
-    map.setView([lat,lng],12,{animate:true});
-    if(markers[id]) setTimeout(()=>markers[id].openPopup(),600);
-  },200);
-  alert('✅ Nodo agregado: '+name);
-}
+  const SC={g:'#00cc66',y:'#ffaa00',r:'#ff3344',gr:'#3a5060'};
+  function makeIcon(s){
+    return L.divIcon({
+      html:`<div style="width:14px;height:14px;border-radius:50%;background:${SC[s]};border:2px solid white;box-shadow:0 0 10px ${SC[s]}"></div>`,
+      className:'', iconSize:[14,14]
+    });
+  }
 
-function render(){renderStats();renderMarkers();renderPanel();}
-function goSala(id){window.location.href='/Sala-Tx/sala.html?id='+id;}
-function logout(){sessionStorage.clear();window.location.href='/Sala-Tx/index.html';}
+  window.render = function(){
+    if(!map) return;
+    Object.values(markers).forEach(m => map.removeLayer(m));
+    markers = {};
+    let stats = {g:0, y:0, r:0, gr:0};
 
-// Clock
-setInterval(()=>{const n=new Date();document.getElementById('clk').textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0');},1000);
+    const q = document.getElementById('srch').value.toLowerCase();
 
-// Pulse animation
-const st=document.createElement('style');
-st.textContent='@keyframes mpls{0%{transform:scale(1);opacity:.6}100%{transform:scale(2.2);opacity:0}}';
-document.head.appendChild(st);
+    nodos.forEach(n => {
+      if(q && !n.name.toLowerCase().includes(q)) return;
+      const s = getStatus(n.rel);
+      stats[s]++;
+      
+      const mk = L.marker([n.lat, n.lng], {
+        icon: makeIcon(s),
+        draggable: true 
+      }).addTo(map);
 
-// INIT
-loadRel();
-initMap();
-render();
+      mk.on('dragend', function(e) {
+        const pos = e.target.getLatLng();
+        n.lat = pos.lat;
+        n.lng = pos.lng;
+        saveAllToCloud(); 
+      });
+
+      mk.bindPopup(`<b>${n.name}</b><br>Relevamiento: ${n.rel || 'Sin fecha'}<br><button onclick="window.location.href='sala.html?id=${n.id}'" style="margin-top:5px; padding:4px; cursor:pointer">Abrir Sala</button>`);
+      markers[n.id] = mk;
+    });
+
+    document.getElementById('sG').textContent = stats.g;
+    document.getElementById('sY').textContent = stats.y;
+    document.getElementById('sR').textContent = stats.r;
+    document.getElementById('sGr').textContent = stats.gr;
+    renderPanel();
+  }
+
+  function renderPanel(){
+    const list = document.getElementById('rpList');
+    list.innerHTML = nodos.map(n => `
+      <div class="ni" onclick="map.setView([${n.lat}, ${n.lng}], 12)">
+        <span style="width:8px;height:8px;border-radius:50%;background:${SC[getStatus(n.rel)]}"></span>
+        <div class="ni-name">${n.name}</div>
+      </div>
+    `).join('');
+  }
+
+  function getStatus(rel){
+    if(!rel) return 'gr';
+    const m = (new Date() - new Date(rel))/(1000*60*60*24*30.44);
+    return m < 6 ? 'g' : m < 12 ? 'y' : 'r';
+  }
+
+  initMap();
+  setInterval(()=>{const n=new Date();document.getElementById('clk').textContent=n.toLocaleTimeString();},1000);
 </script>
 </body>
 </html>
